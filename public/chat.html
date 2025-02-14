@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Clones IA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #222;
+        }
+        .header h1 {
+            color: #ff007f;
+        }
+        .clones-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .clone-card {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .clone-card img {
+            width: 100%;
+            border-radius: 10px;
+        }
+        .clone-card h2 {
+            color: #ff007f;
+        }
+        .clone-card button {
+            background: #e60073;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .clone-card button:hover {
+            background: #ff007f;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Clones AI</h1>
+        <button onclick="logout()">Cerrar Sesión</button>
+    </div>
+
+    <div class="container">
+        <h2>Explora los Clones</h2>
+        <div class="clones-list" id="clonesList">
+            <!-- Clones generados dinámicamente -->
+        </div>
+    </div>
+
+    <script>
+        const apiKey = 'TU_API_KEY';
+        const clonesUrl = 'https://api.airtable.com/v0/TU_ID_BASE/Clones';
+
+        async function fetchClones() {
+            const response = await fetch(clonesUrl, {
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            });
+            const data = await response.json();
+            displayClones(data.records);
+        }
+
+        function displayClones(clones) {
+            const container = document.getElementById('clonesList');
+            container.innerHTML = '';
+            clones.forEach(clone => {
+                const cloneElement = document.createElement('div');
+                cloneElement.classList.add('clone-card');
+                cloneElement.innerHTML = `
+                    <img src="${clone.fields.Imagen}" alt="${clone.fields.Nombre}">
+                    <h2>${clone.fields.Nombre}</h2>
+                    <p>${clone.fields.Descripcion}</p>
+                    <button onclick="viewClone('${clone.id}')">Ver Perfil</button>
+                `;
+                container.appendChild(cloneElement);
+            });
+        }
+
+        function viewClone(id) {
+            window.location.href = `clone_profile.html?id=${id}`;
+        }
+
+        function logout() {
+            alert('Sesión cerrada');
+            window.location.href = 'index.html';
+        }
+
+        fetchClones();
+    </script>
+</body>
+</html>

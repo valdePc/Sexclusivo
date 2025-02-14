@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil del Clon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+        }
+        .profile-header {
+            text-align: center;
+            padding: 20px;
+            background: #222;
+            border-radius: 10px;
+        }
+        .profile-header img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: 3px solid #ff007f;
+        }
+        .profile-header h2 {
+            margin: 10px 0;
+            color: #ff007f;
+        }
+        .subscribe-btn {
+            background: #e60073;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .subscribe-btn:hover {
+            background: #ff007f;
+        }
+        .content-wall {
+            margin-top: 20px;
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+        }
+        .chat-container {
+            margin-top: 20px;
+            background: #222;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .chat-box {
+            height: 200px;
+            overflow-y: auto;
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .chat-input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        .chat-video {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .chat-video button {
+            flex: 1;
+            padding: 10px;
+            margin: 5px;
+            background: #e60073;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chat-video button:hover {
+            background: #ff007f;
+        }
+        .video-call-container {
+            display: none;
+            margin-top: 20px;
+            background: #222;
+            padding: 10px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="profile-header">
+            <img id="cloneImage" src="" alt="Clon">
+            <h2 id="cloneName"></h2>
+            <p id="cloneDescription"></p>
+            <button class="subscribe-btn" onclick="subscribeClone()">Suscribirse</button>
+        </div>
+        
+        <div class="content-wall" id="contentWall">
+            <h3>Publicaciones</h3>
+        </div>
+
+        <div class="chat-container">
+            <h3>Chat Privado</h3>
+            <div class="chat-box" id="chatBox"></div>
+            <input type="text" id="chatInput" class="chat-input" placeholder="Escribe un mensaje...">
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+
+        <div class="chat-video">
+            <button onclick="startVideoCall()">Iniciar Videollamada</button>
+        </div>
+
+        <div class="video-call-container" id="videoCallContainer">
+            <h3>Videollamada Activa</h3>
+            <div id="videoFrame"></div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const cloneId = urlParams.get('id');
+        const apiKey = 'TU_API_KEY';
+        const airtableBaseId = 'TU_ID_BASE';
+        const openAiApiKey = 'TU_OPENAI_API_KEY';
+        const clonesUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clones/${cloneId}`;
+        const messagesUrl = `https://api.airtable.com/v0/${airtableBaseId}/Mensajes`;
+        const subscriptionsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Suscripciones`;
+
+        async function fetchCloneData() {
+            const response = await fetch(clonesUrl, {
+                headers: { 'Authorization': `Bearer ${apiKey}` }
+            });
+            const data = await response.json();
+            displayCloneData(data.fields);
+        }
+
+        function displayCloneData(clone) {
+            document.getElementById('cloneImage').src = clone.Imagen;
+            document.getElementById('cloneName').innerText = clone.Nombre;
+            document.getElementById('cloneDescription').innerText = clone.Descripcion;
+        }
+
+        async function sendMessage() {
+            let message = document.getElementById("chatInput").value;
+            document.getElementById("chatBox").innerHTML += `<p style='color: #ff007f'>Tú: ${message}</p>`;
+            document.getElementById("chatInput").value = "";
+            
+            await fetch(messagesUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ fields: { Clon: cloneId, Mensaje: message } })
+            });
+        }
+
+        async function subscribeClone() {
+            await fetch(subscriptionsUrl, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${apiKey}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ fields: { Clon: cloneId, Usuario: "usuario123" } })
+            });
+            alert("Te has suscrito a este clon.");
+        }
+
+        function startVideoCall() {
+            document.getElementById("videoCallContainer").style.display = "block";
+            let domain = "meet.jit.si";
+            let options = {
+                roomName: `Clon-${cloneId}-Call`,
+                width: 700,
+                height: 500,
+                parentNode: document.querySelector("#videoFrame")
+            };
+            new JitsiMeetExternalAPI(domain, options);
+        }
+
+        fetchCloneData();
+    </script>
+    <script src="https://meet.jit.si/external_api.js"></script>
+</body>
+</html>
