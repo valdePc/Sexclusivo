@@ -45,12 +45,6 @@
         .subscribe-btn:hover {
             background: #ff007f;
         }
-        .content-wall {
-            margin-top: 20px;
-            background: #222;
-            padding: 15px;
-            border-radius: 10px;
-        }
         .chat-container {
             margin-top: 20px;
             background: #222;
@@ -58,43 +52,31 @@
             border-radius: 10px;
         }
         .chat-box {
-            height: 200px;
+            height: 300px;
             overflow-y: auto;
             background: #333;
             padding: 10px;
             border-radius: 5px;
         }
         .chat-input {
-            width: 100%;
+            width: 80%;
             padding: 10px;
             margin-top: 10px;
             border: none;
             border-radius: 5px;
         }
-        .chat-video {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        .chat-video button {
-            flex: 1;
+        .send-btn {
+            width: 18%;
             padding: 10px;
-            margin: 5px;
+            margin-left: 5px;
             background: #e60073;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
         }
-        .chat-video button:hover {
+        .send-btn:hover {
             background: #ff007f;
-        }
-        .video-call-container {
-            display: none;
-            margin-top: 20px;
-            background: #222;
-            padding: 10px;
-            border-radius: 10px;
         }
     </style>
 </head>
@@ -106,44 +88,38 @@
             <p id="cloneDescription"></p>
             <button class="subscribe-btn" onclick="subscribeClone()">Suscribirse</button>
         </div>
-        
-        <div class="content-wall" id="contentWall">
-            <h3>Publicaciones</h3>
-        </div>
 
         <div class="chat-container">
-            <h3>Chat Privado</h3>
+            <h3>Chat con tu Clon</h3>
             <div class="chat-box" id="chatBox"></div>
             <input type="text" id="chatInput" class="chat-input" placeholder="Escribe un mensaje...">
-            <button onclick="sendMessage()">Enviar</button>
-        </div>
-
-        <div class="chat-video">
-            <button onclick="startVideoCall()">Iniciar Videollamada</button>
-        </div>
-
-        <div class="video-call-container" id="videoCallContainer">
-            <h3>Videollamada Activa</h3>
-            <div id="videoFrame"></div>
+            <button class="send-btn" onclick="sendMessage()">Enviar</button>
         </div>
     </div>
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const cloneId = urlParams.get('id');
-        const apiKey = 'TU_API_KEY';
-        const airtableBaseId = 'TU_ID_BASE';
-        const openAiApiKey = 'TU_OPENAI_API_KEY';
-        const clonesUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clones/${cloneId}`;
+        const apiKey = 'patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f';
+        const airtableBaseId = 'app4hvr9H3C5RzRLh';
+        
+        const geminiApiKey = `AIzaSyDQnmskTmDXtPtm7ACjOkZLlf2WGAQJjN4`; // Reemplaza con la clave API de Google
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+
         const messagesUrl = `https://api.airtable.com/v0/${airtableBaseId}/Mensajes`;
-        const subscriptionsUrl = `https://api.airtable.com/v0/${airtableBaseId}/Suscripciones`;
+        const clonesUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clones/${cloneId}`;
 
         async function fetchCloneData() {
-            const response = await fetch(clonesUrl, {
-                headers: { 'Authorization': `Bearer ${apiKey}` }
-            });
-            const data = await response.json();
-            displayCloneData(data.fields);
+            try {
+                const response = await fetch(clonesUrl, {
+                    headers: { 'Authorization': `Bearer ${apiKey}` }
+                });
+                if (!response.ok) throw new Error('Error al obtener datos del clon');
+                const data = await response.json();
+                displayCloneData(data.fields);
+            } catch (error) {
+                alert("Error al cargar el clon.");
+            }
         }
 
         function displayCloneData(clone) {
@@ -154,9 +130,12 @@
 
         async function sendMessage() {
             let message = document.getElementById("chatInput").value;
-            document.getElementById("chatBox").innerHTML += `<p style='color: #ff007f'>Tú: ${message}</p>`;
+            if (!message.trim()) return;
+
+            document.getElementById("chatBox").innerHTML += `<p style='color: #ff007f'><b>Tú:</b> ${message}</p>`;
             document.getElementById("chatInput").value = "";
-            
+
+            // Guardar mensaje en Airtable
             await fetch(messagesUrl, {
                 method: "POST",
                 headers: {
@@ -165,34 +144,56 @@
                 },
                 body: JSON.stringify({ fields: { Clon: cloneId, Mensaje: message } })
             });
-        }
 
-        async function subscribeClone() {
-            await fetch(subscriptionsUrl, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${apiKey}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ fields: { Clon: cloneId, Usuario: "usuario123" } })
-            });
-            alert("Te has suscrito a este clon.");
-        }
+            try {
+                // Enviar mensaje a Google Gemini
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: message }]
+                        }]
+                    })
+                });
 
-        function startVideoCall() {
-            document.getElementById("videoCallContainer").style.display = "block";
-            let domain = "meet.jit.si";
-            let options = {
-                roomName: `Clon-${cloneId}-Call`,
-                width: 700,
-                height: 500,
-                parentNode: document.querySelector("#videoFrame")
-            };
-            new JitsiMeetExternalAPI(domain, options);
+                const responseData = await response.json();
+
+                if (!response.ok || !responseData.candidates) {
+                    console.error("Error con Google Gemini:", responseData);
+                    document.getElementById("chatBox").innerHTML += `<p style='color: red'><b>Error:</b> No se pudo obtener respuesta.</p>`;
+                    return;
+                }
+
+                const botMessage = responseData.candidates[0].content.parts[0].text;
+
+                // Mostrar respuesta en el chat
+                document.getElementById("chatBox").innerHTML += `<p style='color: #00ffcc'><b>Clon:</b> ${botMessage}</p>`;
+
+                // Guardar respuesta en Airtable
+                await fetch(messagesUrl, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${apiKey}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ fields: { Clon: cloneId, Mensaje: botMessage } })
+                });
+
+                // Auto-scroll al último mensaje
+                let chatBox = document.getElementById("chatBox");
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+            } catch (error) {
+                console.error("Error en la solicitud:", error);
+                document.getElementById("chatBox").innerHTML += `<p style='color: red'><b>Error:</b> No se pudo conectar con el bot.</p>`;
+            }
         }
 
         fetchCloneData();
     </script>
-    <script src="https://meet.jit.si/external_api.js"></script>
 </body>
 </html>
+

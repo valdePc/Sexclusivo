@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona un Clon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+        .clones-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .clone-card {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            width: 200px;
+        }
+        .clone-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #ff007f;
+        }
+        .subscribe-btn {
+            background: #e60073;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .subscribe-btn:hover {
+            background: #ff007f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selecciona un Clon</h1>
+        <div class="clones-container" id="clonesList"></div>
+    </div>
+
+    <script>
+        const airtableApiKey = "patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f";
+        const airtableBaseId = "app4hvr9H3C5RzRLh";
+        const airtableTable = "Clones";
+        const apiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${airtableTable}`;
+
+        async function loadClones() {
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: { "Authorization": `Bearer ${airtableApiKey}` }
+                });
+                if (!response.ok) throw new Error("Error al obtener clones desde Airtable");
+                const data = await response.json();
+                displayClones(data.records);
+            } catch (error) {
+                console.error(error);
+                alert("No se pudieron cargar los clones");
+            }
+        }
+
+        function displayClones(clones) {
+            const container = document.getElementById("clonesList");
+            container.innerHTML = "";
+            clones.forEach(record => {
+                const fields = record.fields;
+                const imageUrl = fields.Imagen && fields.Imagen.length > 0 ? fields.Imagen[0].url : "https://via.placeholder.com/100";
+                const cloneCard = document.createElement("div");
+                cloneCard.className = "clone-card";
+                cloneCard.innerHTML = `
+                    <img src="${imageUrl}" alt="${fields.Nombre}">
+                    <h3>${fields.Nombre || "Sin nombre"}</h3>
+                    <p>${fields.Descripcion || "Sin descripción"}</p>
+                    <button class="subscribe-btn" onclick="subscribe('${record.id}')">Suscribirse</button>
+                `;
+                container.appendChild(cloneCard);
+            });
+        }
+
+        function subscribe(cloneId) {
+            alert("Te has suscrito a este clon. Redirigiendo al chat...");
+            window.location.href = `chat.html?id=${cloneId}`;
+        }
+
+        loadClones();
+    </script>
+</body>
+</html>
