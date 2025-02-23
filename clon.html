@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crear Clon</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+    .form-container {
+      margin: 50px auto;
+      width: 300px;
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    input, textarea {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #555;
+      background: #333;
+      color: #fff;
+    }
+    button {
+      padding: 10px;
+      background: #ff007f;
+      border: none;
+      color: #fff;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e60073;
+    }
+    .profile {
+      display: none;
+      margin-top: 30px;
+    }
+    .profile img {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 3px solid #ff007f;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container" id="cloneFormContainer">
+    <h2>Crear tu Clon</h2>
+    <form id="cloneForm">
+      <input type="text" id="cloneNameInput" placeholder="Nombre del clon" required>
+      <textarea id="cloneDescriptionInput" placeholder="Descripción del clon" required></textarea>
+      <input type="file" id="clonePhotoInput" accept="image/*">
+      <button type="submit">Crear Clon</button>
+    </form>
+  </div>
+
+  <div class="profile" id="cloneProfile">
+    <h2 id="displayCloneName"></h2>
+    <img id="displayClonePhoto" src="https://via.placeholder.com/150" alt="Foto del clon">
+    <p id="displayCloneDescription"></p>
+    <button onclick="startVideoCall()">Iniciar Video Llamada</button>
+  </div>
+
+  <script>
+    // Al enviar el formulario, se "crea" el clon y se muestra su perfil
+    document.getElementById('cloneForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      // Obtener los valores del formulario
+      const name = document.getElementById('cloneNameInput').value;
+      const description = document.getElementById('cloneDescriptionInput').value;
+      const photoInput = document.getElementById('clonePhotoInput');
+      
+      // Asignar el nombre y descripción al perfil del clon
+      document.getElementById('displayCloneName').textContent = name;
+      document.getElementById('displayCloneDescription').textContent = description;
+      
+      // Si se seleccionó una foto, se muestra; de lo contrario, se usa una imagen de placeholder
+      if (photoInput.files && photoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('displayClonePhoto').src = e.target.result;
+        }
+        reader.readAsDataURL(photoInput.files[0]);
+      } else {
+        document.getElementById('displayClonePhoto').src = 'https://via.placeholder.com/150';
+      }
+      
+      // Ocultar el formulario y mostrar el perfil del clon
+      document.getElementById('cloneFormContainer').style.display = 'none';
+      document.getElementById('cloneProfile').style.display = 'block';
+    });
+
+    // Función para iniciar la videollamada (aquí se simula)
+    function startVideoCall() {
+      // Aquí puedes integrar WebRTC o redirigir a una interfaz de video llamada
+      alert("Iniciando videollamada con tu clon...");
+      // Ejemplo: podrías redirigir a una URL específica, o abrir un modal con la interfaz de video.
+    }
+  </script>
+</body>
+</html>

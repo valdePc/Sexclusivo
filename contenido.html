@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selecciona un Clon</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #111;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            position: relative;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px;
+        }
+        .clones-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .clone-card {
+            background: #222;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            width: 200px;
+        }
+        .clone-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 2px solid #ff007f;
+        }
+        .profile-btn {
+            background: #e60073;
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .profile-btn:hover {
+            background: #ff007f;
+        }
+
+        /* Botón de configuración */
+        .settings-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .settings-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .settings-menu {
+            display: none;
+            position: absolute;
+            top: 40px;
+            right: 0;
+            background: #222;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+            text-align: left;
+            width: 200px;
+        }
+        .settings-menu a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .settings-menu a:hover {
+            background: #333;
+        }
+        /* Fondo animado */
+.background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(255,0,127,0.2) 0%, rgba(0,0,0,0.9) 100%);
+    overflow: hidden;
+    z-index: -1;
+}
+
+/* Partículas animadas */
+.particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    background: #ff007f;
+    border-radius: 50%;
+    opacity: 0.7;
+    animation: float 5s infinite linear;
+}
+
+@keyframes float {
+    0% { transform: translateY(0) rotate(0deg); }
+    100% { transform: translateY(-100vh) rotate(360deg); }
+}
+
+/* Tarjetas de los clones con efectos */
+.clone-card {
+    background: rgba(34, 34, 34, 0.9);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    width: 220px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0px 4px 10px rgba(255, 0, 127, 0.3);
+}
+
+.clone-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0px 6px 15px rgba(255, 0, 127, 0.5);
+}
+
+/* Botón de perfil con mejor diseño */
+.profile-btn {
+    background: linear-gradient(45deg, #ff007f, #e60073);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    box-shadow: 0px 4px 10px rgba(255, 0, 127, 0.5);
+}
+
+.profile-btn:hover {
+    background: linear-gradient(45deg, #e60073, #ff007f);
+    transform: scale(1.05);
+}
+
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+
+    <div class="settings-container">
+        <button class="settings-btn" onclick="toggleSettingsMenu()">⚙️</button>
+        <div class="settings-menu" id="settingsMenu">
+            <a href="#">Mis suscripciones</a>
+            <a href="#">Configuración y privacidad</a>
+            <a href="#">Pantalla y accesibilidad</a>
+            <a href="#">Enviar comentarios</a>
+            <a href="#" onclick="logout()">Cerrar sesión</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1>Selecciona un Clon</h1>
+        <div class="clones-container" id="clonesList"></div>
+    </div>
+
+    <script>
+        const airtableApiKey = "patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f";
+        const airtableBaseId = "app4hvr9H3C5RzRLh";
+        const airtableTable = "Clones";
+        const apiUrl = `https://api.airtable.com/v0/${airtableBaseId}/${airtableTable}`;
+
+        // Generar partículas de fondo
+function createParticles() {
+    const background = document.querySelector('.background');
+    background.innerHTML = ""; // Limpia las partículas previas antes de agregar nuevas
+    for (let i = 0; i < 30; i++) {
+        let particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + 'vw';
+        particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        background.appendChild(particle);
+    }
+}
+createParticles();
+
+
+        async function loadClones() {
+            try {
+                const response = await fetch(apiUrl, {
+                    headers: { "Authorization": `Bearer ${airtableApiKey}` }
+                });
+                if (!response.ok) throw new Error("Error al obtener clones desde Airtable");
+                const data = await response.json();
+                displayClones(data.records);
+            } catch (error) {
+                console.error(error);
+                alert("No se pudieron cargar los clones");
+            }
+        }
+
+        function displayClones(clones) {
+            const container = document.getElementById("clonesList");
+            container.innerHTML = "";
+            clones.forEach(record => {
+                const fields = record.fields;
+                const imageUrl = fields.Imagen && fields.Imagen.length > 0 ? fields.Imagen[0].url : "https://via.placeholder.com/100";
+                const cloneCard = document.createElement("div");
+                cloneCard.className = "clone-card";
+                cloneCard.innerHTML = `
+                    <img src="${imageUrl}" alt="${fields.Nombre}">
+                    <h3>${fields.Nombre || "Sin nombre"}</h3>
+                    <p>${fields.Descripcion || "Sin descripción"}</p>
+                    <button class="profile-btn" onclick="viewProfile('${record.id}')">Ver perfil</button>
+                `;
+                container.appendChild(cloneCard);
+            });
+        }
+
+        function viewProfile(cloneId) {
+            window.location.href = `perfil.html?id=${cloneId}`;
+        }
+
+        function logout() {
+            window.location.href = "index.html";
+        }
+
+        function toggleSettingsMenu() {
+            const menu = document.getElementById("settingsMenu");
+            menu.style.display = menu.style.display === "block" ? "none" : "block";
+        }
+
+        document.addEventListener("click", function(event) {
+            const menu = document.getElementById("settingsMenu");
+            const button = document.querySelector(".settings-btn");
+            if (menu.style.display === "block" && !menu.contains(event.target) && !button.contains(event.target)) {
+                menu.style.display = "none";
+            }
+        });
+
+        loadClones();
+    </script>
+</body>
+</html>

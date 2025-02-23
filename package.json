@@ -1,0 +1,36 @@
+{
+  "name": "sexclusivo",
+  "version": "1.0.0",
+  "description": "Plataforma de interacción con clones de IA",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js",
+    "install-deps": "npm install",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "AI",
+    "chatbot",
+    "tts",
+    "clones"
+  ],
+  "author": "Tu Nombre",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/text-to-speech": "^5.8.0",
+    "airtable": "^0.11.3",
+    "axios": "^1.6.0",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.1",
+    "stripe": "^12.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
