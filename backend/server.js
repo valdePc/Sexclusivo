@@ -3,10 +3,7 @@ console.log('🚀 Iniciando server.js');
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import axios from 'axios';
 import bodyParser from 'body-parser';
-import Airtable from 'airtable';
-import Stripe from 'stripe';
 import multer from 'multer';
 import textToSpeech from '@google-cloud/text-to-speech';
 import dotenv from 'dotenv';
@@ -14,7 +11,11 @@ import { fileURLToPath } from 'url';
 
 dotenv.config();
 
-// Configuración de las credenciales de Google TTS
+const app = express();
+const port = process.env.PORT || 5500;
+const upload = multer({ dest: 'uploads/' });
+
+// Inicializar el cliente de Google TTS
 let ttsClient;
 try {
   if (!process.env.GOOGLE_CREDENTIALS_JSON) {
@@ -34,22 +35,6 @@ try {
   process.exit(1);
 }
 
-
-
-// Configurar __filename y __dirname en ES Modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const app = express();
-const port = process.env.PORT || 5500;
-const upload = multer({ dest: 'uploads/' });
-
-// Middleware para establecer Content-Security-Policy
-app.use((req, res, next) => {
-  res.setHeader("Content-Security-Policy", "default-src *; connect-src *;");
-  next();
-});
-
 // Middlewares
 app.use(cors());
 app.use(express.json());
@@ -57,11 +42,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// --------------------
 // 📌 ENDPOINTS API
-// --------------------
 
-// 🎙 **Text-to-Speech (TTS) Endpoint**
+// 🎙 Text-to-Speech (TTS) Endpoint usando el cliente oficial
 app.post('/api/tts', cors(), async (req, res) => { 
   console.log("🟢 Petición TTS recibida:", req.body);
 
@@ -72,12 +55,7 @@ app.post('/api/tts', cors(), async (req, res) => {
   }
 
   try {
-    console.log("🟡 Enviando solicitud a Google Cloud TTS con API Key...");
-
-    // Es preferible almacenar la API Key en una variable de entorno,
-    // pero por ahora usamos la clave que proporcionaste directamente.
-    const apiKey = "AIzaSyDncv7taS8s5FoyK-lKWhMwvckxlSYfWwo";
-    const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+    console.log("🟡 Enviando solicitud a Google Cloud TTS usando cliente oficial...");
 
     const requestBody = {
       input: { text },
@@ -85,14 +63,11 @@ app.post('/api/tts', cors(), async (req, res) => {
       audioConfig: { audioEncoding: 'MP3', speakingRate: 1.0, pitch: 0 }
     };
 
-    const response = await axios.post(url, requestBody, {
-      headers: { 'Content-Type': 'application/json' }
-    });
+    // Usamos el cliente oficial ya autenticado
+    const [response] = await ttsClient.synthesizeSpeech(requestBody);
 
-    const data = response.data;
-
-    if (!data.audioContent) {
-      console.error("⚠️ Error: Google TTS no devolvió contenido de audio.", data);
+    if (!response.audioContent) {
+      console.error("⚠️ Error: Google TTS no devolvió contenido de audio.", response);
       return res.status(500).json({ error: "Error al generar el audio." });
     }
 
@@ -103,35 +78,33 @@ app.post('/api/tts', cors(), async (req, res) => {
       'Content-Type': 'audio/mpeg',
       'Content-Disposition': 'inline; filename="tts-audio.mp3"'
     });
-    // apara tener que actualizar
-    // La respuesta es base64, se convierte a Buffer para enviarla como audio.
-    res.send(Buffer.from(data.audioContent, 'base64'));
+    res.send(Buffer.from(response.audioContent, 'base64'));
   } catch (err) {
     console.error("❌ Error en TTS:", err);
     res.status(500).json({ error: "Error interno al sintetizar el audio." });
   }
 });
 
-
-// 📸 **Placeholder: Subida de imágenes**
+// Otros endpoints (por ejemplo, subida de imágenes)
 app.post('/subir-imagen', upload.single('photo'), (req, res) => {
   res.json({ message: "Funcionalidad no implementada en este ejemplo." });
 });
 
-// 🔍 **Placeholder: Análisis de imágenes**
+// Ejemplo de endpoint para análisis de imágenes
 app.post('/analizar-imagen', async (req, res) => {
   res.json({ message: "Funcionalidad no implementada en este ejemplo." });
 });
 
-// 🔑 **Autenticación & Suscripciones**
+// Rutas de autenticación y suscripciones
 import authRoutes from './routes/auth.js';
 import subscriptionRoutes from './routes/subscription.js';
 app.use('/api/auth', authRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 
-// --------------------
-// 🌍 SERVIR ARCHIVOS ESTÁTICOS
-// --------------------
+// SERVIR ARCHIVOS ESTÁTICOS
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 app.use(express.static(path.join(__dirname, '..')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -141,13 +114,13 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
-// 📌 **Manejo global de errores**
+// Manejo global de errores
 app.use((err, req, res, next) => {
   console.error("❌ Error en el servidor:", err);
   res.status(500).json({ error: "Ocurrió un error interno en el servidor." });
 });
 
-// 🚀 **Iniciar servidor**
+// Iniciar servidor
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
 });
