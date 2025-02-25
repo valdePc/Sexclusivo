@@ -62,7 +62,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // --------------------
 
 // 🎙 **Text-to-Speech (TTS) Endpoint**
-app.post('/api/tts', cors(), async (req, res) => {
+app.post('/api/tts', cors(), async (req, res) => { 
   console.log("🟢 Petición TTS recibida:", req.body);
 
   const text = req.body.text?.trim();
@@ -72,17 +72,27 @@ app.post('/api/tts', cors(), async (req, res) => {
   }
 
   try {
-    console.log("🟡 Enviando solicitud a Google Cloud TTS...");
-    const request = {
+    console.log("🟡 Enviando solicitud a Google Cloud TTS con API Key...");
+
+    // Es preferible almacenar la API Key en una variable de entorno,
+    // pero por ahora usamos la clave que proporcionaste directamente.
+    const apiKey = "AIzaSyDncv7taS8s5FoyK-lKWhMwvckxlSYfWwo";
+    const url = `https://texttospeech.googleapis.com/v1/text:synthesize?key=${apiKey}`;
+
+    const requestBody = {
       input: { text },
       voice: { languageCode: 'es-ES', name: 'es-ES-Wavenet-C', ssmlGender: 'FEMALE' },
       audioConfig: { audioEncoding: 'MP3', speakingRate: 1.0, pitch: 0 }
     };
 
-    const [response] = await ttsClient.synthesizeSpeech(request);
+    const response = await axios.post(url, requestBody, {
+      headers: { 'Content-Type': 'application/json' }
+    });
 
-    if (!response.audioContent) {
-      console.error("⚠️ Error: Google TTS no devolvió contenido de audio.");
+    const data = response.data;
+
+    if (!data.audioContent) {
+      console.error("⚠️ Error: Google TTS no devolvió contenido de audio.", data);
       return res.status(500).json({ error: "Error al generar el audio." });
     }
 
@@ -93,12 +103,15 @@ app.post('/api/tts', cors(), async (req, res) => {
       'Content-Type': 'audio/mpeg',
       'Content-Disposition': 'inline; filename="tts-audio.mp3"'
     });
-    res.send(response.audioContent);
+    
+    // La respuesta es base64, se convierte a Buffer para enviarla como audio.
+    res.send(Buffer.from(data.audioContent, 'base64'));
   } catch (err) {
     console.error("❌ Error en TTS:", err);
     res.status(500).json({ error: "Error interno al sintetizar el audio." });
   }
 });
+
 
 // 📸 **Placeholder: Subida de imágenes**
 app.post('/subir-imagen', upload.single('photo'), (req, res) => {
