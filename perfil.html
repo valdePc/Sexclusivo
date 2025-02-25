@@ -449,6 +449,8 @@ let recognition;
             body: JSON.stringify(followData)
         });
 
+
+        
         if (!response.ok) throw new Error("Error al guardar en Airtable");
 
         alert("Ahora sigues a este clon.");
