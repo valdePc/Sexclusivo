@@ -8,6 +8,7 @@ import multer from 'multer';
 import textToSpeech from '@google-cloud/text-to-speech';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -15,13 +16,15 @@ const app = express();
 const port = process.env.PORT || 5500;
 const upload = multer({ dest: 'uploads/' });
 
-// Inicializar el cliente de Google TTS
+// Configuración de las credenciales de Google TTS leyendo el archivo JSON
 let ttsClient;
 try {
-  if (!process.env.GOOGLE_CREDENTIALS_JSON) {
+  const credsPath = process.env.GOOGLE_CREDENTIALS_JSON;
+  if (!credsPath) {
     throw new Error("No se definió la variable de entorno GOOGLE_CREDENTIALS_JSON");
   }
-  const googleCreds = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+  const credsData = fs.readFileSync(credsPath, 'utf8');
+  const googleCreds = JSON.parse(credsData);
   ttsClient = new textToSpeech.TextToSpeechClient({
     credentials: {
       client_email: googleCreds.client_email,
@@ -29,7 +32,7 @@ try {
     },
     projectId: googleCreds.project_id, // opcional
   });
-  console.log("✅ Cargando credenciales desde GOOGLE_CREDENTIALS_JSON");
+  console.log(`✅ Cargando credenciales desde ${credsPath}`);
 } catch (error) {
   console.error("❌ Error al cargar las credenciales:", error);
   process.exit(1);
@@ -44,7 +47,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // 📌 ENDPOINTS API
 
-// 🎙 Text-to-Speech (TTS) Endpoint usando el cliente oficial
+// 🎙 Endpoint Text-to-Speech (TTS) usando el cliente oficial
 app.post('/api/tts', cors(), async (req, res) => { 
   console.log("🟢 Petición TTS recibida:", req.body);
 
@@ -85,17 +88,17 @@ app.post('/api/tts', cors(), async (req, res) => {
   }
 });
 
-// Otros endpoints (por ejemplo, subida de imágenes)
+// 📸 Placeholder: Subida de imágenes
 app.post('/subir-imagen', upload.single('photo'), (req, res) => {
   res.json({ message: "Funcionalidad no implementada en este ejemplo." });
 });
 
-// Ejemplo de endpoint para análisis de imágenes
+// 🔍 Placeholder: Análisis de imágenes
 app.post('/analizar-imagen', async (req, res) => {
   res.json({ message: "Funcionalidad no implementada en este ejemplo." });
 });
 
-// Rutas de autenticación y suscripciones
+// 🔑 Rutas de autenticación y suscripciones
 import authRoutes from './routes/auth.js';
 import subscriptionRoutes from './routes/subscription.js';
 app.use('/api/auth', authRoutes);
