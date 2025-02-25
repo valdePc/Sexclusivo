@@ -16,27 +16,9 @@ const app = express();
 const port = process.env.PORT || 5500;
 const upload = multer({ dest: 'uploads/' });
 
-// Configuración de las credenciales de Google TTS leyendo el archivo JSON
-let ttsClient;
-try {
-  const credsPath = process.env.GOOGLE_CREDENTIALS_JSON;
-  if (!credsPath) {
-    throw new Error("No se definió la variable de entorno GOOGLE_CREDENTIALS_JSON");
-  }
-  const credsData = fs.readFileSync(credsPath, 'utf8');
-  const googleCreds = JSON.parse(credsData);
-  ttsClient = new textToSpeech.TextToSpeechClient({
-    credentials: {
-      client_email: googleCreds.client_email,
-      private_key: googleCreds.private_key,
-    },
-    projectId: googleCreds.project_id, // opcional
-  });
-  console.log(`✅ Cargando credenciales desde ${credsPath}`);
-} catch (error) {
-  console.error("❌ Error al cargar las credenciales:", error);
-  process.exit(1);
-}
+// Inicializamos el cliente de TTS sin cargar Google Credentials explícitos
+const ttsClient = new textToSpeech.TextToSpeechClient();
+console.log('✅ TTS Client inicializado con configuración por defecto.');
 
 // Middlewares
 app.use(cors());
@@ -66,7 +48,7 @@ app.post('/api/tts', cors(), async (req, res) => {
       audioConfig: { audioEncoding: 'MP3', speakingRate: 1.0, pitch: 0 }
     };
 
-    // Usamos el cliente oficial ya autenticado
+    // Usamos el cliente de TTS
     const [response] = await ttsClient.synthesizeSpeech(requestBody);
 
     if (!response.audioContent) {
