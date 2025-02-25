@@ -103,7 +103,7 @@ app.post('/api/tts', cors(), async (req, res) => {
       'Content-Type': 'audio/mpeg',
       'Content-Disposition': 'inline; filename="tts-audio.mp3"'
     });
-    
+    // apara tener que actualizar
     // La respuesta es base64, se convierte a Buffer para enviarla como audio.
     res.send(Buffer.from(data.audioContent, 'base64'));
   } catch (err) {
