@@ -17,7 +17,8 @@ const port = process.env.PORT || 5500;
 const upload = multer({ dest: 'uploads/' });
 
 // Inicializamos el cliente de TTS sin cargar Google Credentials explícitos
-const ttsClient = new textToSpeech.TextToSpeechClient();
+const googleCredentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+const ttsClient = new textToSpeech.TextToSpeechClient({ credentials: googleCredentials });
 
 console.log('✅ TTS Client inicializado con configuración por defecto.');
 
