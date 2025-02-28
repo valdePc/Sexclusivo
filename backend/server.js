@@ -32,7 +32,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // 📌 ENDPOINTS API
 
 // 🎙 Endpoint Text-to-Speech (TTS) con manejo de errores
-app.post('/api/tts', cors(), async (req, res) => { 
+app.post('/api/tts', async (req, res) => {
   console.log("🟢 Petición TTS recibida:", req.body);
 
   const text = req.body.text?.trim();
@@ -113,5 +113,9 @@ app.use((err, req, res, next) => {
 
 // Iniciar servidor usando el puerto configurado
 const server = app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
+});
+
+app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
 });
