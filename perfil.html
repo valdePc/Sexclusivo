@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Perfil de <span id="cloneTitle"></span></title>
+  <title>Perfil de Clon</title>
   <style>
+    
     body {
       font-family: Arial, sans-serif;
       background: #111;
@@ -194,7 +195,7 @@
       0% { transform: translateY(0) rotate(0deg); }
       100% { transform: translateY(-100vh) rotate(360deg); }
     }
-/* Perfil 56565del clon con efecto futurista */
+/* Perfil del clon con efecto futurista */
 .profile-header {
     position: relative;
     text-align: center;
@@ -298,48 +299,6 @@
     transform: translateX(0);
   }
 }
-#endCallButton {
-    padding: 12px 25px;
-    background: linear-gradient(45deg, #ff0000, #cc0000);
-    border: none;
-    border-radius: 8px;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0px 4px 10px rgba(255, 0, 0, 0.5);
-}
-
-#endCallButton:hover {
-    background: linear-gradient(45deg, #cc0000, #ff0000);
-    transform: scale(1.1);
-}
-#incomingCallContainer {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: #222;
-    padding: 15px;
-    border-radius: 10px;
-    display: none;
-    color: white;
-    box-shadow: 0px 4px 10px rgba(255, 0, 0, 0.5);
-    text-align: center;
-}
-
-#acceptCallButton, #rejectCallButton {
-    padding: 8px 12px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin: 5px;
-}
-
-#acceptCallButton {
-    background: #00cc00;
-    color: white;
-}
 
 #rejectCallButton {
     background: #cc0000;
@@ -378,11 +337,8 @@
  <div class="chat-container" id="chatContainer">
 
     <!-- Botón de llamada con diseño de teléfono -->
- <button id="phoneCallButton" onclick="userCallsClone()" title="Iniciar llamada"
-        style="position: absolute; top: 0; right: 0; background: transparent; border: none; font-size: 32px; cursor: pointer;">
-  📞
-</button>
-
+    <button id="phoneCallButton" onclick="goToCall()" title="Iniciar llamada" style="position: absolute; top: 0; right: 0; background: transparent; border: none; font-size: 32px; cursor: pointer;">📞</button>
+    
     <h3>Chat con <span id="chatCloneName"></span></h3>
     <div class="chat-box" id="chatBox"></div>
     <!-- Indicador de escritura sin texto fijo -->
@@ -401,561 +357,380 @@
 
     <button id="backButton" onclick="goBack()">↩ Volver</button>
     <script>
+      // Define la URL base para TTS según el entorno local
+      // Para Visual Studio Code se asume que tenés un servidor TTS local en http://localhost:5000
+      const BASE_TTS_URL = "https://sexclusivo-production.up.railway.app";
 
-let callActive = false;
-let recognition;
+      // Obtener parámetros de la URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const cloneId = urlParams.get('id');
+      const apiKey = "patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f";
+      const airtableBaseId = "app4hvr9H3C5RzRLh";
+      const geminiApiKey = "AIzaSyDQnmskTmDXtPtm7ACjOkZLlf2WGAQJjN4";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
+      const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clones/${cloneId}`;
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const cloneId = urlParams.get('id');
-        const apiKey = "patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f";
-        const airtableBaseId = "app4hvr9H3C5RzRLh";
-        const geminiApiKey = "AIzaSyDQnmskTmDXtPtm7ACjOkZLlf2WGAQJjN4";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`;
-        const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clones/${cloneId}`;
-
-        async function handleFollow() {
-    const userId = prompt("Ingrese su ID de usuario para seguir a este clon:");
-    if (!userId) return alert("Debe ingresar un ID de usuario.");
-
-    const confirmPayment = confirm("Para seguir a este clon, debe agregar una tarjeta y realizar un pago. ¿Desea continuar?");
-    if (!confirmPayment) return;
-
-    const cardNumber = prompt("Ingrese su número de tarjeta:");
-    const expiryDate = prompt("Ingrese la fecha de vencimiento (MM/AA):");
-    const cvv = prompt("Ingrese el código de seguridad (CVV):");
-
-    if (!cardNumber || !expiryDate || !cvv) return alert("Debe ingresar todos los datos de la tarjeta.");
-
-    try {
-        // Simulación de pago
-        const paymentResponse = await processPayment(cardNumber, expiryDate, cvv);
-        if (!paymentResponse.success) throw new Error("Pago rechazado");
-
-        // Guardar en Airtable
-        const followData = {
+      // Función simulada de pago (modificala según necesites)
+      async function processPayment(cardNumber, expiryDate, cvv) {
+        // Simulación básica: siempre retorna éxito
+        return { success: true };
+      }
+    
+      async function handleFollow() {
+        const userId = prompt("Ingrese su ID de usuario para seguir a este clon:");
+        if (!userId) return alert("Debe ingresar un ID de usuario.");
+    
+        const confirmPayment = confirm("Para seguir a este clon, debe agregar una tarjeta y realizar un pago. ¿Desea continuar?");
+        if (!confirmPayment) return;
+    
+        const cardNumber = prompt("Ingrese su número de tarjeta:");
+        const expiryDate = prompt("Ingrese la fecha de vencimiento (MM/AA):");
+        const cvv = prompt("Ingrese el código de seguridad (CVV):");
+    
+        if (!cardNumber || !expiryDate || !cvv) return alert("Debe ingresar todos los datos de la tarjeta.");
+    
+        try {
+          const paymentResponse = await processPayment(cardNumber, expiryDate, cvv);
+          if (!paymentResponse.success) throw new Error("Pago rechazado");
+    
+          const followData = {
             fields: {
-                UsuarioID: userId,
-                ClonID: cloneId,
-                Fecha: new Date().toISOString(),
+              UsuarioID: userId,
+              ClonID: cloneId,
+              Fecha: new Date().toISOString(),
             }
-        };
-
-        const response = await fetch(`https://api.airtable.com/v0/${airtableBaseId}/Seguidores`, {
+          };
+    
+          const response = await fetch(`https://api.airtable.com/v0/${airtableBaseId}/Seguidores`, {
             method: "POST",
             headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
+              "Authorization": `Bearer ${apiKey}`,
+              "Content-Type": "application/json"
             },
             body: JSON.stringify(followData)
+          });
+    
+          if (!response.ok) throw new Error("Error al guardar en Airtable");
+    
+          alert("Ahora sigues a este clon.");
+        } catch (error) {
+          alert("Error: " + error.message);
+        }
+      }
+    
+      document.addEventListener('DOMContentLoaded', () => {
+        window.speechSynthesis.onvoiceschanged = () => {
+          const voices = window.speechSynthesis.getVoices();
+          console.log("Voces cargadas:", voices);
+        };
+        // Llamá a fetchCloneData() para cargar los datos del clon
+        fetchCloneData();
+      });
+
+      function goToCall() {
+  window.location.href = "llamada.html?id=" + cloneId;
+}
+
+     
+    
+      function showPaymentOptions() {
+        document.getElementById("paymentOptions").style.display = "block";
+      }
+    
+      async function handleStripePayment() {
+        const stripe = Stripe("TU_PUBLIC_KEY_DE_STRIPE");
+        const response = await fetch("https://tu-servidor.com/crear-pago-stripe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: 500, currency: "usd" })
         });
-
-
+    
+        const session = await response.json();
+        if (!session.id) return alert("Error al procesar el pago con Stripe.");
+    
+        stripe.redirectToCheckout({ sessionId: session.id });
+      }
+    
+      function createParticles() {
+        const background = document.querySelector('.background');
+        background.innerHTML = "";
+        for (let i = 0; i < 30; i++) {
+          let particle = document.createElement('div');
+          particle.className = 'particle';
+          particle.style.left = Math.random() * 100 + 'vw';
+          particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
+          background.appendChild(particle);
+        }
+      }
+      createParticles();
+    
+      async function fetchCloneData() {
+        try {
+          const response = await fetch(airtableUrl, {
+            headers: { "Authorization": `Bearer ${apiKey}` }
+          });
+          if (!response.ok) throw new Error("Error al obtener datos del clon");
+          const data = await response.json();
+          displayCloneData(data.fields);
+        } catch (error) {
+          alert("Error al cargar el perfil del clon.");
+        }
+      }
+    
+      function displayCloneData(fields) {
+        document.getElementById("coverPhoto").src = (fields.Portada && fields.Portada[0]) ? fields.Portada[0].url : "https://via.placeholder.com/800x200";
+        document.getElementById("profilePhoto").src = (fields.Imagen && fields.Imagen[0]) ? fields.Imagen[0].url : "https://via.placeholder.com/100";
+        document.getElementById("cloneName").innerText = fields.Nombre || "Sin nombre";
+        document.getElementById("chatCloneName").innerText = fields.Nombre || "Sin nombre";
+        document.getElementById("cloneDescription").innerText = fields.Descripcion || "Sin descripción";
+      }
+    
+      function toggleChat() {
+        const chatContainer = document.getElementById("chatContainer");
+        chatContainer.style.display = (chatContainer.style.display === "block") ? "none" : "block";
+      }
+    
+      async function sendMessage() {
+        const input = document.getElementById("chatInput");
+        const messageText = input.value.trim();
+        if (!messageText) return;
         
-        if (!response.ok) throw new Error("Error al guardar en Airtable");
-
-        alert("Ahora sigues a este clon.");
-    } catch (error) {
-        alert("Error: " + error.message);
-    }
-}
-document.addEventListener('DOMContentLoaded', () => {
-  window.speechSynthesis.onvoiceschanged = () => {
-    const voices = window.speechSynthesis.getVoices();
-    // Aquí puedes actualizar la selección de la voz si es necesario
-    console.log("Voces cargadas:", voices);
-  };
-
-  // Aquí puedes inicializar otras funciones o llamar a fetchCloneData(), etc.
-});
-
-function userCallsClone() {
-    document.getElementById("videoCallContainer").style.display = "flex";
-    document.getElementById("videoAvatar").src = document.getElementById("profilePhoto").src;
-    document.getElementById("videoCloneName").innerText = document.getElementById("chatCloneName").innerText;
-    callActive = true;
-
-    // Reproducir sonido de timbre del clon
-    const ringtone = document.getElementById("incomingCallSound");
-    ringtone.play();
-
-    // Simular tiempo de espera (3 a 7 segundos)
-    const delay = Math.floor(Math.random() * 4000) + 3000;
-    setTimeout(() => {
-        ringtone.pause();
-        ringtone.currentTime = 0;
-        startVoiceRecognition(); // El clon responde
-    }, delay);
-}
-
-// ✅ Función cuando el clon llama al usuario
-function incomingCallFromClone() {
-    document.getElementById("callerName").innerText = document.getElementById("chatCloneName").innerText;
-    document.getElementById("incomingCallContainer").style.display = "block";
-
-    // Reproducir sonido de llamada entrante
-    const ringtone = document.getElementById("incomingCallSound");
-    ringtone.play();
-
-    // Si el usuario no responde en 15 segundos, la llamada se cancela
-    setTimeout(() => {
-        if (document.getElementById("incomingCallContainer").style.display === "block") {
-            rejectCall();
-        }
-    }, 15000);
-}
-
-// ✅ Función para aceptar la llamada entrante del clon
-function acceptCall() {
-    document.getElementById("incomingCallContainer").style.display = "none";
-    document.getElementById("videoCallContainer").style.display = "flex";
-    document.getElementById("videoAvatar").src = document.getElementById("profilePhoto").src;
-    document.getElementById("videoCloneName").innerText = document.getElementById("chatCloneName").innerText;
-    callActive = true;
-
-    // Detener sonido de llamada
-    const ringtone = document.getElementById("incomingCallSound");
-    ringtone.pause();
-    ringtone.currentTime = 0;
-
-    startVoiceRecognition();
-}
-
-function showPaymentOptions() {
-    document.getElementById("paymentOptions").style.display = "block";
-}
-async function handleStripePayment() {
-    const stripe = Stripe("TU_PUBLIC_KEY_DE_STRIPE"); // Reemplaza con tu clave pública de Stripe
-
-    const response = await fetch("https://tu-servidor.com/crear-pago-stripe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: 500, currency: "usd" }) // Precio en centavos (500 = $5)
-    });
-
-    const session = await response.json();
-    if (!session.id) return alert("Error al procesar el pago con Stripe.");
-
-    stripe.redirectToCheckout({ sessionId: session.id });
-}
-// Generar partículas de fondo
-function createParticles() {
-    const background = document.querySelector('.background');
-    background.innerHTML = ""; // Limpia las partículas previas antes de agregar nuevas
-    for (let i = 0; i < 30; i++) {
-        let particle = document.createElement('div');
-        particle.className = 'particle';
-        particle.style.left = Math.random() * 100 + 'vw';
-        particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
-        background.appendChild(particle);
-    }
-}
-createParticles();
-
-
-        async function fetchCloneData() {
-            try {
-                const response = await fetch(airtableUrl, {
-                    headers: { "Authorization": `Bearer ${apiKey}` }
-                });
-                if (!response.ok) throw new Error("Error al obtener datos del clon");
-                const data = await response.json();
-                displayCloneData(data.fields);
-            } catch (error) {
-                alert("Error al cargar el perfil del clon.");
-            }
-        }
-
-        function displayCloneData(fields) {
-            document.getElementById("coverPhoto").src = fields.Portada && fields.Portada[0] ? fields.Portada[0].url : "https://via.placeholder.com/800x200";
-            document.getElementById("profilePhoto").src = fields.Imagen && fields.Imagen[0] ? fields.Imagen[0].url : "https://via.placeholder.com/100";
-            document.getElementById("cloneName").innerText = fields.Nombre || "Sin nombre";
-            document.getElementById("chatCloneName").innerText = fields.Nombre || "Sin nombre";
-            document.getElementById("cloneDescription").innerText = fields.Descripcion || "Sin descripción";
-        }
+        const chatBox = document.getElementById("chatBox");
+        const userMsg = document.createElement('div');
+        userMsg.classList.add('chat-message', 'user-message');
+        userMsg.textContent = messageText;
+        chatBox.appendChild(userMsg);
+        chatBox.scrollTop = chatBox.scrollHeight;
         
-
-        function toggleChat() {
-            const chatContainer = document.getElementById("chatContainer");
-            chatContainer.style.display = chatContainer.style.display === "block" ? "none" : "block";
-        }
-
-        async function sendMessage() {
-    const input = document.getElementById("chatInput");
-    const messageText = input.value.trim();
-    if (!messageText) return;
-    
-    const chatBox = document.getElementById("chatBox");
-    
-    // Crear y mostrar el mensaje del usuario (derecha)
-    const userMsg = document.createElement('div');
-    userMsg.classList.add('chat-message', 'user-message');
-    userMsg.textContent = messageText;
-    chatBox.appendChild(userMsg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    
-    // Reproducir sonido de envío
-    document.getElementById("sendSound").play();
-    
-    // Limpiar el input
-    input.value = "";
-    
-    // Mostrar indicador de escritura del bot con el nombre del clon
-    const typingIndicator = document.getElementById("typingIndicator");
-    typingIndicator.style.display = "block";
-    typingIndicator.innerText = document.getElementById("chatCloneName").innerText + " está escribiendo...";
-    
-    // Espera inicial para simular que el bot comienza a escribir (1.5 - 3s aleatorios)
-    let initialDelay = Math.floor(Math.random() * 1500) + 1500;
-    await new Promise(resolve => setTimeout(resolve, initialDelay));
-    
-    try {
-        // Realizar la petición a la API con un prompt que indique claramente el rol
-        const response = await fetch(apiUrl, {
+        document.getElementById("sendSound").play();
+        input.value = "";
+        
+        const typingIndicator = document.getElementById("typingIndicator");
+        typingIndicator.style.display = "block";
+        typingIndicator.innerText = document.getElementById("chatCloneName").innerText + " está escribiendo...";
+        
+        let initialDelay = Math.floor(Math.random() * 1500) + 1500;
+        await new Promise(resolve => setTimeout(resolve, initialDelay));
+        
+        try {
+          const response = await fetch(apiUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                contents: [{
-                  parts: [{
-                    text: `Actúa como si tu nombre fuera "${document.getElementById("chatCloneName").innerText}" y tu descripción es: "${document.getElementById("cloneDescription").innerText}". 
-Responde siempre en primera persona y evita mencionar que eres un modelo de lenguaje. 
-El usuario dice: "${messageText}".`
-                  }]
+              contents: [{
+                parts: [{
+                  text: `Actúa como si tu nombre fuera "${document.getElementById("chatCloneName").innerText}" y tu descripción es: "${document.getElementById("cloneDescription").innerText}". 
+    Responde siempre en primera persona y evita mencionar que eres un modelo de lenguaje. 
+    El usuario dice: "${messageText}".`
                 }]
+              }]
             })
-        });
-        const responseData = await response.json();
-        
-        // Espera adicional para simular la escritura del bot (2 - 4s aleatorios)
-        let additionalDelay = Math.floor(Math.random() * 2000) + 2000;
-        await new Promise(resolve => setTimeout(resolve, additionalDelay));
-        
-        let botText = "";
-        if (!response.ok || !responseData.candidates) {
+          });
+          const responseData = await response.json();
+          
+          let additionalDelay = Math.floor(Math.random() * 2000) + 2000;
+          await new Promise(resolve => setTimeout(resolve, additionalDelay));
+          
+          let botText = "";
+          if (!response.ok || !responseData.candidates) {
             botText = "No se pudo obtener respuesta.";
-        } else {
+          } else {
             botText = responseData.candidates[0].content.parts[0].text;
+          }
+          
+          const botMsg = document.createElement('div');
+          botMsg.classList.add('chat-message', 'bot-message');
+          botMsg.textContent = botText;
+          chatBox.appendChild(botMsg);
+          chatBox.scrollTop = chatBox.scrollHeight;
+          
+          document.getElementById("receiveSound").play();
+          speak(botText);
+          document.getElementById("receiveSound").play();
+        } catch (error) {
+          const errorMsg = document.createElement('div');
+          errorMsg.classList.add('chat-message', 'bot-message');
+          errorMsg.style.color = "red";
+          errorMsg.textContent = "";
+          chatBox.appendChild(errorMsg);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        } finally {
+          typingIndicator.style.display = "none";
         }
-        
-        // Crear y mostrar el mensaje del bot (izquierda)
-        const botMsg = document.createElement('div');
-        botMsg.classList.add('chat-message', 'bot-message');
-        botMsg.textContent = botText;
-        chatBox.appendChild(botMsg);
-        chatBox.scrollTop = chatBox.scrollHeight;
-
-        // Después de crear y mostrar el mensaje del clon:
-document.getElementById("receiveSound").play();
-speak(botText);
-
-        
-        // Reproducir sonido de recepción
-        document.getElementById("receiveSound").play();
-    } catch (error) {
-        const errorMsg = document.createElement('div');
-        errorMsg.classList.add('chat-message', 'bot-message');
-        errorMsg.style.color = "red";
-        errorMsg.textContent = "";
-        chatBox.appendChild(errorMsg);
-        chatBox.scrollTop = chatBox.scrollHeight;
-    } finally {
-        // Ocultar el indicador de escritura
-        typingIndicator.style.display = "none";
-    }
-}
-
-
-        fetchCloneData();
-
-        function goBack() {
-        window.history.back();
-    }
-    async function getCloneResponse(userText) {
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `Actúa como si tu nombre fuera "${document.getElementById("chatCloneName").innerText}" y tu descripción es: "${document.getElementById("cloneDescription").innerText}". 
-Responde siempre en primera persona y evita mencionar que eres un modelo de lenguaje. 
-El usuario dice: "${userText}".`
-          }]
-        }]
-      })
-    });
-    const responseData = await response.json();
-    if (!response.ok || !responseData.candidates) {
-      return "No se pudo obtener respuesta.";
-    } else {
-      return responseData.candidates[0].content.parts[0].text;
-    }
-  } catch (error) {
-    return "Error al conectar con el clon.";
-  }
-}
-
-
-    // Función para iniciar la llamada simulada
-    function startCall() {
-    document.getElementById("incomingCallContainer").style.display = "block";
-
-    // Reproducir sonido de llamada entrante
-    const ringtone = document.getElementById("incomingCallSound");
-    ringtone.play();
-
-    // Simular tiempo de respuesta humana (entre 3 y 7 segundos)
-    const delay = Math.floor(Math.random() * 4000) + 3000; // 3000ms (3s) a 7000ms (7s)
-    setTimeout(() => {
-        if (document.getElementById("incomingCallContainer").style.display === "block") {
-            acceptCall(); // Contestar la llamada automáticamente
+      }
+    
+      async function getCloneResponse(userText) {
+        try {
+          const response = await fetch(apiUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{
+                parts: [{
+                  text: `Actúa como si tu nombre fuera "${document.getElementById("chatCloneName").innerText}" y tu descripción es: "${document.getElementById("cloneDescription").innerText}". 
+    Responde siempre en primera persona y evita mencionar que eres un modelo de lenguaje. 
+    El usuario dice: "${userText}".`
+                }]
+              }]
+            })
+          });
+          const responseData = await response.json();
+          if (!response.ok || !responseData.candidates) {
+            return "No se pudo obtener respuesta.";
+          } else {
+            return responseData.candidates[0].content.parts[0].text;
+          }
+        } catch (error) {
+          return "Error al conectar con el clon.";
         }
-    }, delay);
-}
-
-// Función para aceptar la llamada y mostrar la interfaz de video
-function acceptCall() {
-    document.getElementById("incomingCallContainer").style.display = "none";
-    document.getElementById("videoCallContainer").style.display = "flex";
-    document.getElementById("videoAvatar").src = document.getElementById("profilePhoto").src;
-    document.getElementById("videoCloneName").innerText = document.getElementById("chatCloneName").innerText;
-    callActive = true;
-
-    // Detenerssss sonido de llamada
-    const ringtone = document.getElementById("incomingCallSound");
-    ringtone.pause();
-    ringtone.currentTime = 0;
-
-    startVoiceRecognition();
-}
-
-
-async function speak(text) {
-    try {
-        const response = await fetch("https://sexclusivo-production.up.railway.app/api/tts", {
+      }
+    
+ 
+    
+    
+      async function speak(text) {
+        try {
+          const response = await fetch(`${BASE_TTS_URL}/api/tts`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text })
-        });
-
-        if (!response.ok) throw new Error("Error en la solicitud: " + response.status);
-
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = new Audio(audioUrl);
-        audio.play();
-
-        console.log("🔊 Audio reproducido correctamente.");
-    } catch (error) {
-        console.error("❌ Error reproduciendo voz:", error);
-    }
-}
-
-
-// Coloca aquí la función startVoiceRecognition()
-function startVoiceRecognition() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-        alert("Tu navegador no soporta reconocimiento de voz.");
-        return;
-    }
-
-    recognition = new SpeechRecognition();
-    recognition.lang = "es-ES";
-    recognition.continuous = true;
-    recognition.interimResults = false;
-
-    recognition.onresult = async (event) => {
-        let finalTranscript = "";
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-            const result = event.results[i];
-            if (result.isFinal) {
-                finalTranscript += result[0].transcript;
-            }
+          });
+          
+          if (!response.ok) {
+            throw new Error("Error en la solicitud: " + response.status);
+          }
+          
+          const audioBlob = await response.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = new Audio(audioUrl);
+          
+          audio.play().catch(error => {
+            console.error("Error al reproducir audio:", error);
+            const playButton = document.createElement("button");
+            playButton.textContent = "Reproducir audio";
+            playButton.style.position = "fixed";
+            playButton.style.bottom = "20px";
+            playButton.style.left = "20px";
+            playButton.style.padding = "10px";
+            playButton.style.zIndex = "1000";
+            playButton.onclick = () => {
+              audio.play().catch(err => console.error("Error al reproducir audio tras clic:", err));
+              playButton.remove();
+            };
+            document.body.appendChild(playButton);
+          });
+          
+          console.log("🔊 Audio reproducido correctamente.");
+        } catch (error) {
+          console.error("❌ Error reproduciendo voz:", error);
         }
-
-        if (finalTranscript && callActive) {
-            const botResponse = await getCloneResponse(finalTranscript);
-            speak(botResponse); // Solo habla, pero no lo muestra en el chat
+      }
+    
+      function sendPhoto(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const imageUrl = e.target.result;
+          const chatBox = document.getElementById("chatBox");
+          const imageMessage = document.createElement("div");
+          imageMessage.classList.add('chat-message', 'user-message');
+          const img = document.createElement("img");
+          img.src = imageUrl;
+          img.style.maxWidth = "100%";
+          img.style.borderRadius = "10px";
+          imageMessage.appendChild(img);
+          chatBox.appendChild(imageMessage);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        };
+        reader.readAsDataURL(file);
+      }
+    
+      async function uploadImage(file) {
+        try {
+          const formData = new FormData();
+          formData.append('photo', file);
+          const response = await fetch('https://tu-servidor.com/subir-imagen', {
+            method: 'POST',
+            body: formData
+          });
+          if (!response.ok) {
+            throw new Error('Error al subir la imagen.');
+          }
+          const data = await response.json();
+          return data.imageUrl;
+        } catch (error) {
+          console.error('Error en uploadImage:', error);
+          throw error;
         }
-    };
-
-    recognition.onerror = (event) => {
-        console.error("Error de reconocimiento:", event.error);
-    };
-
-    recognition.onend = () => {
-        if (callActive && !speechSynthesis.speaking) {
-            recognition.start();
+      }
+    
+      async function analyzeImage(imageUrl) {
+        try {
+          const response = await fetch('https://tu-servidor.com/analizar-imagen', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imageUrl })
+          });
+          if (!response.ok) {
+            throw new Error('Error al analizar la imagen.');
+          }
+          const data = await response.json();
+          return data.description || "No se pudo obtener una descripción.";
+        } catch (error) {
+          console.error('Error en analyzeImage:', error);
+          return "Error al analizar la imagen.";
         }
-    };
-
-    recognition.start();
-}
-
-
-function endCall() {
-    callActive = false;
-    document.getElementById("videoCallContainer").style.display = "none";
-
-    if (recognition) {
-        recognition.stop(); // Detener reconocimiento de voz
-    }
-
-    speechSynthesis.cancel(); // Detener la voz del clon
-}
-function sendPhoto(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const imageUrl = e.target.result;
+      }
     
-    // Crear un contenedor para el mensaje de imagen
-    const chatBox = document.getElementById("chatBox");
-    const imageMessage = document.createElement("div");
-    imageMessage.classList.add('chat-message', 'user-message');
+      async function sendPhotoMessage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async function(e) {
+          const imageUrlLocal = e.target.result;
+          const chatBox = document.getElementById("chatBox");
+          const imageMessage = document.createElement("div");
+          imageMessage.classList.add('chat-message', 'user-message');
+          const img = document.createElement("img");
+          img.src = imageUrlLocal;
+          img.style.maxWidth = "100%";
+          img.style.borderRadius = "10px";
+          imageMessage.appendChild(img);
+          chatBox.appendChild(imageMessage);
+          chatBox.scrollTop = chatBox.scrollHeight;
+          
+          try {
+            const uploadedImageUrl = await uploadImage(file);
+            const description = await analyzeImage(uploadedImageUrl);
+            const prompt = `Te he enviado una imagen que parece mostrar: "${description}". ¿Qué opinas?`;
+            await sendMessageToClone(prompt);
+          } catch (error) {
+            console.error("Error al procesar el mensaje de imagen:", error);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     
-    // Crear el elemento de imagen
-    const img = document.createElement("img");
-    img.src = imageUrl;
-    img.style.maxWidth = "100%";
-    img.style.borderRadius = "10px";
-    
-    // Agregar la imagen al contenedor del mensaje y luego al chat
-    imageMessage.appendChild(img);
-    chatBox.appendChild(imageMessage);
-    chatBox.scrollTop = chatBox.scrollHeight;
-
-    // Opcional: Aquí podrías enviar la imagen al clon, por ejemplo, subiéndola a un servidor
-    // y luego enviando la URL resultante a través de tu lógica de chat.
-  };
-  reader.readAsDataURL(file);
-}
-// Función para subir la imagen al servidor
-async function uploadImage(file) {
-  try {
-    const formData = new FormData();
-    formData.append('photo', file);
-    const response = await fetch('https://tu-servidor.com/subir-imagen', {
-      method: 'POST',
-      body: formData
-    });
-    if (!response.ok) {
-      throw new Error('Error al subir la imagen.');
-    }
-    const data = await response.json();
-    return data.imageUrl; // La URL donde se alojó la imagen
-  } catch (error) {
-    console.error('Error en uploadImage:', error);
-    throw error;
-  }
-}
-
-// Función para analizar la imagen usando tu endpoint (por ejemplo, con Cloud Vision)
-async function analyzeImage(imageUrl) {
-  try {
-    const response = await fetch('https://tu-servidor.com/analizar-imagen', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ imageUrl })
-    });
-    if (!response.ok) {
-      throw new Error('Error al analizar la imagen.');
-    }
-    const data = await response.json();
-    return data.description || "No se pudo obtener una descripción.";
-  } catch (error) {
-    console.error('Error en analyzeImage:', error);
-    return "Error al analizar la imagen.";
-  }
-}
-
-// Función para enviar el mensaje con la imagen y la descripción al clon
-async function sendPhotoMessage(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+      async function sendMessageToClone(messageText) {
+        try {
+          const botResponse = await getCloneResponse(messageText);
+          const chatBox = document.getElementById("chatBox");
+          const botMsg = document.createElement("div");
+          botMsg.classList.add("chat-message", "bot-message");
+          botMsg.textContent = botResponse;
+          chatBox.appendChild(botMsg);
+          chatBox.scrollTop = chatBox.scrollHeight;
+        } catch (error) {
+          console.error("Error en sendMessageToClone:", error);
+        }
+      }
   
-  // Mostrar la foto en el chat (opcional)
-  const reader = new FileReader();
-  reader.onload = async function(e) {
-    const imageUrlLocal = e.target.result;
-    const chatBox = document.getElementById("chatBox");
-    const imageMessage = document.createElement("div");
-    imageMessage.classList.add('chat-message', 'user-message');
-    const img = document.createElement("img");
-    img.src = imageUrlLocal;
-    img.style.maxWidth = "100%";
-    img.style.borderRadius = "10px";
-    imageMessage.appendChild(img);
-    chatBox.appendChild(imageMessage);
-    chatBox.scrollTop = chatBox.scrollHeight;
-    
-    try {
-      // Subir la imagen a tu servidor y obtener su URL
-      const uploadedImageUrl = await uploadImage(file);
-      
-      // Analizar la imagen para obtener una descripción
-      const description = await analyzeImage(uploadedImageUrl);
-      
-      // Crear el prompt para el clon
-      const prompt = `Te he enviado una imagen que parece mostrar: "${description}". ¿Qué opinas?`;
-      
-      // Enviar el prompt al clon y mostrar su respuesta en el chat
-      await sendMessageToClone(prompt);
-    } catch (error) {
-      console.error("Error al procesar el mensaje de imagen:", error);
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-// Función para enviar el mensaje al clon y mostrar su respuesta
-async function sendMessageToClone(messageText) {
-  try {
-    // Se asume que getCloneResponse es una función que envía el prompt al clon y retorna su respuesta
-    const botResponse = await getCloneResponse(messageText);
-    const chatBox = document.getElementById("chatBox");
-    const botMsg = document.createElement("div");
-    botMsg.classList.add("chat-message", "bot-message");
-    botMsg.textContent = botResponse;
-    chatBox.appendChild(botMsg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  } catch (error) {
-    console.error("Error en sendMessageToClone:", error);
-  }
-}
-
-
-// setTimeout(incomingCallFromClone, 5000);   xxxxxxxxx
-
     </script>
+    
     <!-- Agrega esto al final del <body> -->
 <audio id="sendSound" src="https://www.myinstants.com/media/sounds/message-sent.mp3" preload="auto"></audio>
 <audio id="receiveSound" src="https://www.myinstants.com/media/sounds/message-received.mp3" preload="auto"></audio>
-
-
-<!-- Contenedor de la llamada simulada -->
-<div id="videoCallContainer" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; display:none; align-items:center; justify-content:center; flex-direction:column;">
-    <div style="background:#222; padding:20px; border-radius:10px; text-align:center;">
-      <img id="videoAvatar" src="" alt="Avatar del clon" style="width:150px; height:150px; border-radius:50%; border: 3px solid #ff007f;">
-      <h2 id="videoCloneName" style="color:#fff;"></h2>
-      <!-- Botón para finalizar la llamada simulada -->
-      <button onclick="endCall()" style="padding:10px 20px; background:red; border:none; border-radius:5px; color:#fff; cursor:pointer;">Finalizar llamada</button>
-      <p id="recognizedText" style="color:#fff; font-style: italic; margin-top:10px;"></p>
-
-    </div>
-  </div>
-  <audio id="ringtone" src="https://www.myinstants.com/media/sounds/phone-ringing.mp3" preload="auto"></audio>
-<!-- Notificación de llamada entrante -->
-<div id="incomingCallContainer" style="position: fixed; top: 20px; right: 20px; background: #222; padding: 15px; border-radius: 10px; display: none; color: white;">
-    <p>📞 Llamada entrante de <span id="callerName"></span></p>
-    <button id="acceptCallButton" onclick="acceptCall()">Aceptar</button>
-    <button id="rejectCallButton" onclick="rejectCall()">Rechazar</button>
-</div>
-<audio id="incomingCallSound" src="https://www.myinstants.com/media/sounds/phone-ringing.mp3" preload="auto"></audio>
 
 </body>
 </html>

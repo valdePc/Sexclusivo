@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Llamada - Clon</title>
+  <!-- Fuente futurista -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Reset básico y fuente */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #0d0d0d, #1a1a1a);
+      color: #fff;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+    /* Fondo animado */
+    .background-animation {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at center, rgba(255,0,127,0.2), transparent 70%);
+      animation: pulse 3s infinite alternate;
+      z-index: -2;
+    }
+    @keyframes pulse {
+      from { transform: scale(1); opacity: 0.7; }
+      to { transform: scale(1.2); opacity: 1; }
+    }
+    /* Partículas flotantes */
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+    .particles div {
+      position: absolute;
+      background: #ff007f;
+      border-radius: 50%;
+      opacity: 0.5;
+      animation: float 10s linear infinite;
+    }
+    @keyframes float {
+      from { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+      to { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+    }
+    /* Contenedor de la llamada */
+    .call-container {
+      position: relative;
+      padding: 40px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #ff007f;
+      border-radius: 20px;
+      box-shadow: 0 0 20px rgba(255, 0, 127, 0.5);
+      text-align: center;
+      width: 90%;
+      max-width: 500px;
+      animation: slideIn 1s ease-out;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(50px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .call-avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      border: 4px solid #ff007f;
+      margin-bottom: 20px;
+      object-fit: cover;
+    }
+    .call-info {
+      margin-bottom: 20px;
+    }
+    .call-status {
+      font-size: 1.2em;
+      margin-bottom: 20px;
+      color: #ff007f;
+      text-shadow: 0 0 10px #ff007f;
+    }
+    .end-call {
+      padding: 15px 30px;
+      font-size: 1em;
+      background: linear-gradient(45deg, #ff0000, #cc0000);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+    }
+    .end-call:hover {
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+  <div class="background-animation"></div>
+  <div class="particles" id="particles"></div>
+  
+  <div class="call-container">
+    <img id="videoAvatar" class="call-avatar" src="https://via.placeholder.com/150" alt="Avatar del clon">
+    <div class="call-info">
+      <h2 id="videoCloneName">Cargando...</h2>
+      <p id="callStatus" class="call-status">Conectando...</p>
+    </div>
+    <button class="end-call" onclick="endCall()">Finalizar llamada</button>
+  </div>
+
+  <script>
+    // Generar partículas de fondo
+    const particlesContainer = document.getElementById("particles");
+    for(let i = 0; i < 50; i++){
+      const particle = document.createElement("div");
+      particle.style.width = particle.style.height = Math.random() * 5 + 3 + "px";
+      particle.style.left = Math.random() * 100 + "vw";
+      particle.style.top = Math.random() * 100 + "vh";
+      particle.style.animationDuration = Math.random() * 10 + 5 + "s";
+      particlesContainer.appendChild(particle);
+    }
+
+    // Recuperar el id del clon de la URL (por ejemplo: llamada.html?id=123)
+    const urlParams = new URLSearchParams(window.location.search);
+    const cloneId = urlParams.get('id');
+
+    // Configuración para Airtable
+    const apiKey = "patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f";
+    const airtableBaseId = "app4hvr9H3C5RzRLh";
+    const airtableUrl = `https://api.airtable.com/v0/${airtableBaseId}/Clones/${cloneId}`;
+
+    // Función para obtener los datos del clon desde Airtable
+    async function fetchCloneData() {
+      try {
+        const response = await fetch(airtableUrl, {
+          headers: { "Authorization": `Bearer ${apiKey}` }
+        });
+        if (!response.ok) throw new Error("Error al obtener datos del clon");
+        const data = await response.json();
+        displayCloneData(data.fields);
+      } catch (error) {
+        console.error("Error al cargar datos del clon:", error);
+        document.getElementById("videoCloneName").innerText = "Datos no disponibles";
+      }
+    }
+
+    function displayCloneData(fields) {
+      // Se asume que en Airtable la imagen viene en el campo "Imagen" y el nombre en "Nombre"
+      document.getElementById("videoAvatar").src = (fields.Imagen && fields.Imagen[0]) ? fields.Imagen[0].url : "https://via.placeholder.com/150";
+      document.getElementById("videoCloneName").innerText = fields.Nombre || "Sin nombre";
+    }
+
+    // Llamar a fetchCloneData para obtener los datos al cargar la página
+    fetchCloneData();
+
+    // Configuración del TTS (puedes usar tu endpoint o uno de servicios como Amazon Polly)
+    const BASE_TTS_URL = "https://sexclusivo-production.up.railway.app"; // Asegúrate de que este endpoint esté activo
+
+    async function speak(text) {
+  try {
+    const response = await fetch(`${BASE_TTS_URL}/api/tts`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+    if (!response.ok) {
+      throw new Error("Error en la solicitud: " + response.status);
+    }
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    audio.play().catch(error => {
+      console.error("Error al reproducir audio:", error);
+    });
+  } catch (error) {
+    console.error("❌ Error reproduciendo voz:", error);
+  }
+}
+
+    // Simulación de conexión: después de 3 segundos, cambia el estado y haz que el clon hable
+    setTimeout(() => {
+      document.getElementById("callStatus").innerText = "En llamada...";
+      // El clon saluda con voz humana
+      speak("Hola, ¿en qué puedo ayudarte?");
+    }, 3000);
+
+    // Función para finalizar la llamada y regresar a la página de perfil
+    function endCall(){
+      window.location.href = "perfil.html?id=" + cloneId;
+    }
+  </script>
+</body>
+</html>

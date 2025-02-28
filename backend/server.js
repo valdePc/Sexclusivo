@@ -18,6 +18,7 @@ const upload = multer({ dest: 'uploads/' });
 
 // Inicializamos el cliente de TTS sin cargar Google Credentials explícitos
 const ttsClient = new textToSpeech.TextToSpeechClient();
+
 console.log('✅ TTS Client inicializado con configuración por defecto.');
 
 // Middlewares
@@ -29,7 +30,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // 📌 ENDPOINTS API
 
-// 🎙 Endpoint Text-to-Speech (TTS) usando el cliente oficial
+// 🎙 Endpoint Text-to-Speech (TTS) con manejo de errores
 app.post('/api/tts', cors(), async (req, res) => { 
   console.log("🟢 Petición TTS recibida:", req.body);
 
@@ -40,7 +41,7 @@ app.post('/api/tts', cors(), async (req, res) => {
   }
 
   try {
-    console.log("🟡 Enviando solicitud a Google Cloud TTS usando cliente oficial...");
+    console.log("🟡 Enviando solicitud a Google Cloud TTS...");
 
     const requestBody = {
       input: { text },
@@ -48,11 +49,13 @@ app.post('/api/tts', cors(), async (req, res) => {
       audioConfig: { audioEncoding: 'MP3', speakingRate: 1.0, pitch: 0 }
     };
 
+    console.log("📤 Request TTS:", JSON.stringify(requestBody, null, 2));
+
     // Usamos el cliente de TTS
     const [response] = await ttsClient.synthesizeSpeech(requestBody);
 
     if (!response.audioContent) {
-      console.error("⚠️ Error: Google TTS no devolvió contenido de audio.", response);
+      console.error("⚠️ Error: TTS no devolvió contenido de audio.", response);
       return res.status(500).json({ error: "Error al generar el audio." });
     }
 
@@ -65,8 +68,11 @@ app.post('/api/tts', cors(), async (req, res) => {
     });
     res.send(Buffer.from(response.audioContent, 'base64'));
   } catch (err) {
-    console.error("❌ Error en TTS:", err);
-    res.status(500).json({ error: "Error interno al sintetizar el audio." });
+    console.error("❌ Error en TTS:", err.stack);
+    res.status(500).json({ 
+      error: "Error interno al sintetizar el audio.", 
+      details: err.message 
+    });
   }
 });
 
@@ -104,7 +110,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Ocurrió un error interno en el servidor." });
 });
 
-// Iniciar servidor
-app.listen(port, '0.0.0.0', () => {
+// Iniciar servidor usando el puerto configurado
+const server = app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
 });

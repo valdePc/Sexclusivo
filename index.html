@@ -1,265 +1,260 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Adult Content</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: #fff;
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background: #222;
-            padding: 20px;
-            border-radius: 10px;
-            width: 350px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            border-radius: 5px;
-            background: #333;
-            color: white;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #e60073;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #ff007f;
-        }
-        .toggle {
-            margin-top: 10px;
-            cursor: pointer;
-            color: #ff007f;
-        }
-        .hidden {
-            display: none;
-        }
-
-        /* Fondo animado */
-.background {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(255,0,127,0.2) 0%, rgba(0,0,0,0.9) 100%);
-    overflow: hidden;
-    z-index: -1;
-}
-
-.particle {
-    position: absolute;
-    width: 5px;
-    height: 5px;
-    background: #ff007f;
-    border-radius: 50%;
-    opacity: 0.7;
-    animation: float 5s infinite linear;
-}
-
-@keyframes float {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(-100vh) rotate(360deg); }
-}
-
-
-    </style>
-    
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Adult Content</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: #fff;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: #222;
+      padding: 20px;
+      border-radius: 10px;
+      width: 350px;
+      position: relative;
+      z-index: 1;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+      background: #333;
+      color: #fff;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #e60073;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #ff007f;
+    }
+    .toggle {
+      margin-top: 10px;
+      cursor: pointer;
+      color: #ff007f;
+    }
+    .hidden {
+      display: none;
+    }
+    /* Fondo animado */
+    .background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255,0,127,0.2) 0%, rgba(0,0,0,0.9) 100%);
+      overflow: hidden;
+      z-index: -1;
+    }
+    .particle {
+      position: absolute;
+      width: 5px;
+      height: 5px;
+      background: #ff007f;
+      border-radius: 50%;
+      opacity: 0.7;
+      animation: float 5s infinite linear;
+    }
+    @keyframes float {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(-100vh) rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-    <div class="background"></div>
-
-    <div class="container">
-        <h2 id="formTitle">Iniciar Sesión</h2>
-
-        <!-- Formulario de Inicio de Sesión -->
-        <div id="loginForm">
-            <input type="email" id="loginEmail" placeholder="Correo Electrónico" required>
-            <input type="password" id="loginPassword" placeholder="Contraseña" required>
-            <button onclick="handleAuth()">Entrar</button>
-        </div>
-
-        <!-- Formulario de Registro (Oculto por defecto) -->
-        <div id="registerForm" class="hidden">
-            <input type="number" id="age" placeholder="Edad" required>
-            <select id="country">
-                <option value="">Seleccione su país</option>
-                <option value="México">México</option>
-                <option value="Argentina">Argentina</option>
-                <option value="España">España</option>
-                <option value="Colombia">Colombia</option>
-                <option value="Otro">Otro</option>
-            </select>
-            <input type="email" id="email" placeholder="Correo Electrónico">
-            <input type="tel" id="phone" placeholder="Número de Teléfono">
-            <button onclick="sendVerificationCode()">Enviar Código</button>
-            <input type="text" id="verificationCode" placeholder="Código de Verificación" disabled>
-            <input type="password" id="password" placeholder="Contraseña" required>
-            <input type="password" id="confirmPassword" placeholder="Confirmar Contraseña" required>
-            <button onclick="register()">Registrarse</button>
-        </div>
-
-        <p class="toggle" onclick="toggleForm()">¿No tienes cuenta? Regístrate</p>
+  <div class="background"></div>
+  
+  <div class="container">
+    <h2 id="formTitle">Comenzar Sesión</h2>
+    
+    <!-- Formulario de Inicio de Sesión -->
+    <div id="loginForm">
+      <input type="email" id="loginEmail" placeholder="Correo Electrónico" required>
+      <input type="password" id="loginPassword" placeholder="Contraseña" required>
+      <button onclick="handleAuth()">Endddtrar</button>
     </div>
+    
+    <!-- Formulario de Registro (Oculto por defecto) -->
+    <div id="registerForm" class="hidden">
+      <input type="number" id="age" placeholder="Edad" required>
+      <select id="country">
+        <option value="">Seleccione su país</option>
+        <option value="México">México</option>
+        <option value="Argentina">Argentina</option>
+        <option value="España">España</option>
+        <option value="Colombia">Colombia</option>
+        <option value="Otro">Otro</option>
+      </select>
+      <input type="email" id="email" placeholder="Correo Electrónico">
+      <input type="tel" id="phone" placeholder="Número de Teléfono">
+      <button onclick="sendVerificationCode()">Enviar Código</button>
+      <input type="text" id="verificationCode" placeholder="Código de Verificación" disabled>
+      <input type="password" id="password" placeholder="Contraseña" required>
+      <input type="password" id="confirmPassword" placeholder="Confirmar Contraseña" required>
+      <button onclick="register()">Registrarse</button>
+    </div>
+    
+    <p class="toggle" onclick="toggleForm()">¿No tienes cuenta? Regístrate</p>
+  </div>
 
-    <script>
-        let isLogin = true;
-        const apiKey = 'patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f';
-        const baseUrl = 'https://api.airtable.com/v0/app4hvr9H3C5RzRLh/tbl8xgedxdzdl7Wl5';
-        let verificationCode = '';
-// la realtividad 5619561818189481818
-        function toggleForm() {
-            isLogin = !isLogin;
-            document.getElementById('formTitle').innerText = isLogin ? 'Iniciar Sesión' : 'Registro';
-            document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
-            document.getElementById('registerForm').classList.toggle('hidden', isLogin);
-            document.querySelector('.toggle').innerText = isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión';
-        }
+  <script>
+    let isLogin = true;
+    const apiKey = 'patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f';
+    const baseUrl = 'https://api.airtable.com/v0/app4hvr9H3C5RzRLh/tbl8xgedxdzdl7Wl5';
+    let verificationCode = '';
 
-        function sendVerificationCode() {
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
+    // Alterna entre formulario de login y registro
+    function toggleForm() {
+      isLogin = !isLogin;
+      document.getElementById('formTitle').innerText = isLogin ? 'Iniciar Sesión' : 'Registro';
+      document.getElementById('loginForm').classList.toggle('hidden', !isLogin);
+      document.getElementById('registerForm').classList.toggle('hidden', isLogin);
+      document.querySelector('.toggle').innerText = isLogin ? '¿No tienes cuenta? Regístrate' : '¿Ya tienes cuenta? Inicia Sesión';
+    }
 
-            if (!email && !phone) {
-                alert('Debe proporcionar un correo o número de teléfono.');
-                return;
-            }
+    // Enviar código de verificación
+    function sendVerificationCode() {
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      if (!email && !phone) {
+        alert('Debe proporcionar un correo o número de teléfono.');
+        return;
+      }
+      verificationCode = Math.floor(1000 + Math.random() * 9000);
+      alert(`Código de verificación: ${verificationCode}`);
+      document.getElementById('verificationCode').disabled = false;
+    }
 
-            verificationCode = Math.floor(1000 + Math.random() * 9000);
-            alert(`Código de verificación: ${verificationCode}`);
-
-            document.getElementById('verificationCode').disabled = false;
-        }
-        // Generar partículas de fondo
-function createParticles() {
-    const background = document.querySelector('.background');
-    background.innerHTML = ""; // Limpia las partículas previas antes de agregar nuevas
-    for (let i = 0; i < 30; i++) {
+    // Generar partículas de fondo
+    function createParticles() {
+      const background = document.querySelector('.background');
+      background.innerHTML = "";
+      for (let i = 0; i < 30; i++) {
         let particle = document.createElement('div');
         particle.className = 'particle';
         particle.style.left = Math.random() * 100 + 'vw';
         particle.style.animationDuration = (Math.random() * 3 + 2) + 's';
         background.appendChild(particle);
+      }
     }
-}
-createParticles();
+    createParticles();
 
+    // Manejar autenticación (login o registro)
+    async function handleAuth() {
+      if (isLogin) {
+        const email = document.getElementById('loginEmail').value;
+        const password = document.getElementById('loginPassword').value;
+        login(email, password);
+      } else {
+        register();
+      }
+    }
 
-        async function handleAuth() {
-            if (isLogin) {
-                const email = document.getElementById('loginEmail').value;
-                const password = document.getElementById('loginPassword').value;
-                login(email, password);
-            } else {
-                register();
-            }
-        }
-
-        async function login(email, password) {
-    try {
+    // Función de login
+    async function login(email, password) {
+      try {
         const response = await fetch(baseUrl, {
-            headers: { 'Authorization': `Bearer ${apiKey}` }
+          headers: { 'Authorization': `Bearer ${apiKey}` }
         });
         if (!response.ok) throw new Error('Error en la conexión');
         const data = await response.json();
         const user = data.records.find(record => record.fields.Email === email && record.fields.Password === password);
         if (user) {
-            window.location.href = 'contenido.html';
+          window.location.href = 'contenido.html';
         } else {
-            alert('Correo o contraseña incorrectos');
+          alert('Correo o contraseña incorrectos');
         }
-    } catch (error) {
+      } catch (error) {
         alert('Error en el inicio de sesión');
+      }
     }
-}
 
+    // Función de registro
+    async function register() {
+      const age = parseInt(document.getElementById('age').value);
+      const country = document.getElementById('country').value;
+      const email = document.getElementById('email').value;
+      const phone = document.getElementById('phone').value;
+      const code = document.getElementById('verificationCode').value;
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
 
-        async function register() {
-            const age = parseInt(document.getElementById('age').value);
-            const country = document.getElementById('country').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const code = document.getElementById('verificationCode').value;
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+      if (age < 18) {
+        alert('Debe ser mayor de 18 años para registrarse.');
+        return;
+      }
+      if (!country) {
+        alert('Debe seleccionar un país.');
+        return;
+      }
+      if (!email && !phone) {
+        alert('Debe ingresar un correo o número de teléfono.');
+        return;
+      }
+      if (code !== verificationCode.toString()) {
+        alert('Código de verificación incorrecto.');
+        return;
+      }
+      if (password !== confirmPassword) {
+        alert('Las contraseñas no coinciden.');
+        return;
+      }
 
-            if (age < 18) {
-                alert('Debe ser mayor de 18 años para registrarse.');
-                return;
-            }
-            if (!country) {
-                alert('Debe seleccionar un país.');
-                return;
-            }
-            if (!email && !phone) {
-                alert('Debe ingresar un correo o número de teléfono.');
-                return;
-            }
-            if (code !== verificationCode.toString()) {
-                alert('Código de verificación incorrecto.');
-                return;
-            }
-            if (password !== confirmPassword) {
-                alert('Las contraseñas no coinciden.');
-                return;
-            }
-
-            try {
-                const checkResponse = await fetch(baseUrl, {
-                    headers: { 'Authorization': `Bearer ${apiKey}` }
-                });
-                if (!checkResponse.ok) throw new Error('Error en la conexión');
-                const checkData = await checkResponse.json();
-                const existingUser = checkData.records.find(record => record.fields.Email === email);
-                
-                if (existingUser) {
-                    alert('Este correo ya está registrado.');
-                    return;
-                }
-
-                const response = await fetch(baseUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        fields: { 
-                            Edad: age, 
-                            País: country, 
-                            Email: email, 
-                            Teléfono: phone, 
-                            Password: password 
-                        }
-                    })
-                });
-
-                if (response.ok) {
-                    alert('Registro exitoso, ahora inicia sesión');
-                    toggleForm();
-                } else {
-                    alert('Error en el registro');
-                }
-            } catch (error) {
-                alert('Error en el registro');
-            }
+      try {
+        const checkResponse = await fetch(baseUrl, {
+          headers: { 'Authorization': `Bearer ${apiKey}` }
+        });
+        if (!checkResponse.ok) throw new Error('Error en la conexión');
+        const checkData = await checkResponse.json();
+        const existingUser = checkData.records.find(record => record.fields.Email === email);
+        if (existingUser) {
+          alert('Este correo ya está registrado.');
+          return;
         }
-    </script>
+        const response = await fetch(baseUrl, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            fields: { 
+              Edad: age, 
+              País: country, 
+              Email: email, 
+              Teléfono: phone, 
+              Password: password 
+            }
+          })
+        });
+        if (response.ok) {
+          alert('Registro exitoso, ahora inicia sesión');
+          toggleForm();
+        } else {
+          alert('Error en el registro');
+        }
+      } catch (error) {
+        alert('Error en el registro');
+      }
+    }
+  </script>
 </body>
 </html>
