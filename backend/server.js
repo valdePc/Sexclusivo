@@ -3,7 +3,6 @@ console.log('🚀 Iniciando server.js');
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
-import bodyParser from 'body-parser';
 import multer from 'multer';
 import textToSpeech from '@google-cloud/text-to-speech';
 import dotenv from 'dotenv';
@@ -16,6 +15,20 @@ const app = express();
 const port = process.env.PORT || 5500;
 const upload = multer({ dest: 'uploads/' });
 
+// Configuración explícita de CORS para todas las rutas
+const corsOptions = {
+  origin: '*', // Si deseas restringir a un dominio en específico, reemplaza '*' por el dominio
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Manejo de solicitudes preflight para todas las rutas
+
+// Middlewares para parsear el body
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 // Inicializamos el cliente de TTS usando las credenciales de la variable de entorno
 let googleCredentials;
 try {
@@ -25,17 +38,7 @@ try {
   process.exit(1);
 }
 const ttsClient = new textToSpeech.TextToSpeechClient({ credentials: googleCredentials });
-
 console.log('✅ TTS Client inicializado con configuración por defecto.');
-
-// Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// 📌 ENDPOINTS API
 
 // 🎙 Endpoint Text-to-Speech (TTS) con manejo de errores
 app.post('/api/tts', async (req, res) => { 
@@ -68,8 +71,6 @@ app.post('/api/tts', async (req, res) => {
 
     console.log("✅ Audio generado correctamente. Enviando al cliente...");
     res.set({
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
       'Content-Type': 'audio/mpeg',
       'Content-Disposition': 'inline; filename="tts-audio.mp3"'
     });
