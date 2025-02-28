@@ -433,23 +433,23 @@
 
      
     
-      function showPaymentOptions() {
-        document.getElementById("paymentOptions").style.display = "block";
-      }
+     // function showPaymentOptions() {
+    //    document.getElementById("paymentOptions").style.display = "block";
+   //   }
     
-      async function handleStripePayment() {
-        const stripe = Stripe("TU_PUBLIC_KEY_DE_STRIPE");
-        const response = await fetch("https://tu-servidor.com/crear-pago-stripe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ amount: 500, currency: "usd" })
-        });
+     // async function handleStripePayment() {
+  //      const stripe = Stripe("TU_PUBLIC_KEY_DE_STRIPE");
+   //     const response = await fetch("https://tu-servidor.com/crear-pago-stripe", {
+    //      method: "POST",
+    //      headers: { "Content-Type": "application/json" },
+   //       body: JSON.stringify({ amount: 500, currency: "usd" })
+    //    });
     
-        const session = await response.json();
-        if (!session.id) return alert("Error al procesar el pago con Stripe.");
+  //      const session = await response.json();
+  //      if (!session.id) return alert("Error al procesar el pago con Stripe.");
     
-        stripe.redirectToCheckout({ sessionId: session.id });
-      }
+   //     stripe.redirectToCheckout({ sessionId: session.id });
+    //  }
     
       function createParticles() {
         const background = document.querySelector('.background');
