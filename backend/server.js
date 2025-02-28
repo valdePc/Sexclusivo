@@ -16,8 +16,14 @@ const app = express();
 const port = process.env.PORT || 5500;
 const upload = multer({ dest: 'uploads/' });
 
-// Inicializamos el cliente de TTS sin cargar Google Credentials explícitos
-const googleCredentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+// Inicializamos el cliente de TTS usando las credenciales de la variable de entorno
+let googleCredentials;
+try {
+  googleCredentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
+} catch (e) {
+  console.error("❌ Error al parsear GOOGLE_APPLICATION_CREDENTIALS_JSON:", e);
+  process.exit(1);
+}
 const ttsClient = new textToSpeech.TextToSpeechClient({ credentials: googleCredentials });
 
 console.log('✅ TTS Client inicializado con configuración por defecto.');
@@ -32,7 +38,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // 📌 ENDPOINTS API
 
 // 🎙 Endpoint Text-to-Speech (TTS) con manejo de errores
-app.post('/api/tts', async (req, res) => {
+app.post('/api/tts', async (req, res) => { 
   console.log("🟢 Petición TTS recibida:", req.body);
 
   const text = req.body.text?.trim();
@@ -112,10 +118,6 @@ app.use((err, req, res, next) => {
 });
 
 // Iniciar servidor usando el puerto configurado
-const server = app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
-});
-
 app.listen(port, '0.0.0.0', () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
 });
