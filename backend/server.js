@@ -1,124 +1,128 @@
-console.log('🚀 Iniciando server.js');
+import dotenv from 'dotenv';
+dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import path from 'path';
-import multer from 'multer';
-import textToSpeech from '@google-cloud/text-to-speech';
-import dotenv from 'dotenv';
-import { fileURLToPath } from 'url';
-import fs from 'fs';
-
-dotenv.config();
+import axios from 'axios';
 
 const app = express();
-const port = process.env.PORT || 5500;
-const upload = multer({ dest: 'uploads/' });
 
-// Configuración explícita de CORS para todas las rutas
-const corsOptions = {
-  origin: '*', // Si deseas restringir a un dominio en específico, reemplaza '*' por el dominio
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+// Habilitar CORS correctamente
+app.use(cors({
+  origin: '*',  // Permite cualquier origen (puedes restringirlo en producción)
+  methods: ['GET', 'POST', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
-};
+}));
 
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions)); // Manejo de solicitudes preflight para todas las rutas
-
-// Middlewares para parsear el body
+// Middleware para parsear JSON
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
-// Inicializamos el cliente de TTS usando las credenciales de la variable de entorno
-let googleCredentials;
-try {
-  googleCredentials = JSON.parse(process.env.GOOGLE_APPLICATION_CREDENTIALS_JSON);
-} catch (e) {
-  console.error("❌ Error al parsear GOOGLE_APPLICATION_CREDENTIALS_JSON:", e);
-  process.exit(1);
+// Ruta simple de verificación
+app.get('/', (req, res) => {
+  res.send('Servidor funcionando.');
+});
+
+const PORT = process.env.PORT || 5501;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
+const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID;
+
+// Validar que las variables de entorno estén cargadas
+if (!OPENAI_API_KEY || !ELEVENLABS_API_KEY || !ELEVENLABS_VOICE_ID) {
+  console.error('Error: Faltan variables de entorno.');
+  process.exit(1); // Detener la ejecución si faltan variables críticas
 }
-const ttsClient = new textToSpeech.TextToSpeechClient({ credentials: googleCredentials });
-console.log('✅ TTS Client inicializado con configuración por defecto.');
 
-// 🎙 Endpoint Text-to-Speech (TTS) con manejo de errores
-app.post('/api/tts', async (req, res) => { 
-  console.log("🟢 Petición TTS recibida:", req.body);
+// Middleware para manejar CORS en cada solicitud
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  next();
+});
 
-  const text = req.body.text?.trim();
-  if (!text) {
-    console.error("⚠️ Error: No se recibió texto válido para TTS.");
-    return res.status(400).json({ error: "Debe proporcionar un texto para sintetizar." });
+// Función común para procesar la solicitud y generar la respuesta en audio
+async function handleResponse(req, res) {
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200); // Manejar solicitudes OPTIONS
+  }
+
+  const userText = req.body.text;
+  const recordId = req.body.recordId; // Si usas recordId para algo dinámico
+
+  if (!userText) {
+    return res.status(400).json({ error: 'Texto vacío' });
   }
 
   try {
-    console.log("🟡 Enviando solicitud a Google Cloud TTS...");
+    console.log('Recibido texto:', userText);
+    console.log('Usando OPENAI_API_KEY:', OPENAI_API_KEY ? 'Cargada' : 'No encontrada');
+    console.log('ELEVENLABS_API_KEY:', ELEVENLABS_API_KEY ? 'Cargada' : 'No encontrada');
+    console.log('ELEVENLABS_VOICE_ID:', ELEVENLABS_VOICE_ID ? 'Cargada' : 'No encontrada');
 
-    const requestBody = {
-      input: { text },
-      voice: { languageCode: 'es-ES', name: 'es-ES-Wavenet-C', ssmlGender: 'FEMALE' },
-      audioConfig: { audioEncoding: 'MP3', speakingRate: 1.0, pitch: 0 }
-    };
+    // Enviar el mensaje a GPT-4
+    const gptResponse = await axios.post(
+      'https://api.openai.com/v1/chat/completions',
+      {
+        model: 'gpt-4',
+        messages: [
+          { role: 'system', content: 'Eres un clon realista.' },
+          { role: 'user', content: userText },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
-    console.log("📤 Request TTS:", JSON.stringify(requestBody, null, 2));
+    console.log('Respuesta de GPT:', gptResponse.data);
+    const botReply = gptResponse.data.choices[0].message.content;
+    console.log('Respuesta del bot:', botReply);
 
-    // Usamos el cliente de TTS
-    const [response] = await ttsClient.synthesizeSpeech(requestBody);
+    // Convertir la respuesta a voz con ElevenLabs
+    const elevenLabsResponse = await axios.post(
+      `https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}`,
+      {
+        text: botReply,
+        voice_settings: {
+          stability: 0.5,
+          similarity_boost: 0.5,
+        },
+      },
+      {
+        headers: {
+          'xi-api-key': ELEVENLABS_API_KEY,
+          'Content-Type': 'application/json',
+        },
+        responseType: 'arraybuffer',
+      }
+    );
 
-    if (!response.audioContent) {
-      console.error("⚠️ Error: TTS no devolvió contenido de audio.", response);
-      return res.status(500).json({ error: "Error al generar el audio." });
-    }
-
-    console.log("✅ Audio generado correctamente. Enviando al cliente...");
+    console.log('Respuesta de ElevenLabs recibida');
     res.set({
       'Content-Type': 'audio/mpeg',
-      'Content-Disposition': 'inline; filename="tts-audio.mp3"'
+      'Access-Control-Allow-Origin': '*',  // Permitir acceso CORS en la respuesta
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
     });
-    res.send(Buffer.from(response.audioContent, 'base64'));
-  } catch (err) {
-    console.error("❌ Error en TTS:", err.stack);
-    res.status(500).json({ 
-      error: "Error interno al sintetizar el audio.", 
-      details: err.message 
-    });
+
+    res.send(elevenLabsResponse.data);
+  } catch (error) {
+    console.error('Error completo:', error);
+    console.error('Detalle:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'No se pudo generar la respuesta.' });
   }
-});
+}
 
-// 📸 Placeholder: Subida de imágenes
-app.post('/subir-imagen', upload.single('photo'), (req, res) => {
-  res.json({ message: "Funcionalidad no implementada en este ejemplo." });
-});
+// Definir endpoints que usan la misma lógica
+app.post('/api/getResponse', handleResponse);
+app.post('/api/getCloneResponse', handleResponse);
+app.post('/api/tts', handleResponse);
 
-// 🔍 Placeholder: Análisis de imágenes
-app.post('/analizar-imagen', async (req, res) => {
-  res.json({ message: "Funcionalidad no implementada en este ejemplo." });
-});
-
-// 🔑 Rutas de autenticación y suscripciones
-import authRoutes from './routes/auth.js';
-import subscriptionRoutes from './routes/subscription.js';
-app.use('/api/auth', authRoutes);
-app.use('/api/subscription', subscriptionRoutes);
-
-// SERVIR ARCHIVOS ESTÁTICOS
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-app.use(express.static(path.join(__dirname, '..')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Ruta principal
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'index.html'));
-});
-
-// Manejo global de errores
-app.use((err, req, res, next) => {
-  console.error("❌ Error en el servidor:", err);
-  res.status(500).json({ error: "Ocurrió un error interno en el servidor." });
-});
-
-// Iniciar servidor usando el puerto configurado
-app.listen(port, '0.0.0.0', () => {
-  console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
+// Iniciar el servidor
+app.listen(PORT, () => {
+  console.log(`Servidor en http://localhost:${PORT}`);
 });

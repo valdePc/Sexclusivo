@@ -83,13 +83,14 @@
   <div class="background"></div>
   
   <div class="container">
-    <h2 id="formTitle">Comenzax Sesiónx</h2>
+    <!-- Puedes ajustar el título si lo deseas -->
+    <h2 id="formTitle">Iniciar Sesión</h2>
     
     <!-- Formulario de Inicio de Sesión -->
     <div id="loginForm">
       <input type="email" id="loginEmail" placeholder="Correo Electrónico" required>
       <input type="password" id="loginPassword" placeholder="Contraseña" required>
-      <button onclick="handleAuth()">Endddtrar</button>
+      <button onclick="handleAuth()">Entrar</button>
     </div>
     
     <!-- Formulario de Registro (Oculto por defecto) -->
@@ -117,6 +118,7 @@
 
   <script>
     let isLogin = true;
+    // Nota: Exponer el API Key de Airtable en el lado cliente implica riesgos de seguridad.
     const apiKey = 'patyZBvcOIap41ai5.d05bb4c1056c366b3daa016ff81d704f0d16b8bc2883e1d55036efea92366a5f';
     const baseUrl = 'https://api.airtable.com/v0/app4hvr9H3C5RzRLh/tbl8xgedxdzdl7Wl5';
     let verificationCode = '';
