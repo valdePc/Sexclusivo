@@ -7,12 +7,31 @@ import axios from 'axios';
 
 const app = express();
 
-// Habilitar CORS correctamente
-app.use(cors({
-  origin: '*',  // Permite cualquier origen (puedes restringirlo en producción)
-  methods: ['GET', 'POST', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Configuración de CORS
+const allowedOrigins = [
+  'http://localhost:5500', // Live Server
+  'https://valdepc.github.io', // GitHub Pages
+  'https://sexclusivo-production.up.railway.app', // Railway
+  'https://45x0mv7r-5501.use2.devtunnels.ms', // Dev Tunnels
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Permitir solicitudes sin origen (por ejemplo, desde aplicaciones móviles o Postman)
+      if (!origin) return callback(null, true);
+
+      // Verificar si el origen está en la lista de permitidos
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Origen no permitido por CORS'));
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos HTTP permitidos
+    credentials: true, // Permitir el envío de credenciales (cookies, headers de autenticación)
+  })
+);
 
 // Middleware para parsear JSON
 app.use(express.json());
@@ -33,20 +52,8 @@ if (!OPENAI_API_KEY || !ELEVENLABS_API_KEY || !ELEVENLABS_VOICE_ID) {
   process.exit(1); // Detener la ejecución si faltan variables críticas
 }
 
-// Middleware para manejar CORS en cada solicitud
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  next();
-});
-
 // Función común para procesar la solicitud y generar la respuesta en audio
 async function handleResponse(req, res) {
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200); // Manejar solicitudes OPTIONS
-  }
-
   const userText = req.body.text;
   const recordId = req.body.recordId; // Si usas recordId para algo dinámico
 
@@ -56,7 +63,7 @@ async function handleResponse(req, res) {
 
   try {
     console.log('Recibido texto:', userText);
-    console.log('Usando OPENAI_API_KEY:', OPENAI_API_KEY ? 'Cargada' : 'No encontrada');
+    console.log('Usando OPENAI_API_KEY:', OPENAI_API_KEY ? 'cargada' : 'no cargada');
     console.log('ELEVENLABS_API_KEY:', ELEVENLABS_API_KEY ? 'Cargada' : 'No encontrada');
     console.log('ELEVENLABS_VOICE_ID:', ELEVENLABS_VOICE_ID ? 'Cargada' : 'No encontrada');
 
@@ -102,13 +109,7 @@ async function handleResponse(req, res) {
     );
 
     console.log('Respuesta de ElevenLabs recibida');
-    res.set({
-      'Content-Type': 'audio/mpeg',
-      'Access-Control-Allow-Origin': '*',  // Permitir acceso CORS en la respuesta
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization'
-    });
-
+    res.set({ 'Content-Type': 'audio/mpeg' });
     res.send(elevenLabsResponse.data);
   } catch (error) {
     console.error('Error completo:', error);
@@ -122,7 +123,6 @@ app.post('/api/getResponse', handleResponse);
 app.post('/api/getCloneResponse', handleResponse);
 app.post('/api/tts', handleResponse);
 
-// Iniciar el servidor
 app.listen(PORT, () => {
   console.log(`Servidor en http://localhost:${PORT}`);
 });
