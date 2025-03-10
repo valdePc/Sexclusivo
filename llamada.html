@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Llamada - Clon</title>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.gstatic.com/s/orbitron/v31/yMJRMIlzdpvBhQQL_Qq7dy0.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">  
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -82,7 +83,7 @@
     </div>
     <button class="end-call" onclick="endCall()">Finalizar llamada</button>
   </div>
-
+  <button id="startCallBtn" style="position:fixed;bottom:20px;right:20px;padding:10px 20px;">Iniciar llamada</button>
   <script>
     // Parámetros y configuración inicial
     const BASE_TTS_URL = "https://sexclusivo-production.up.railway.app";
@@ -104,16 +105,20 @@
     })
     .then(response => response.json())
     .then(data => {
-      const fields = data.fields;
-      if (fields) {
-        const avatarElement = document.getElementById("videoAvatar");
-        if (fields.Imagen && fields.Imagen[0] && fields.Imagen[0].url) {
-          avatarElement.src = fields.Imagen[0].url;
-        }
-        const nameElement = document.getElementById("videoCloneName");
-        nameElement.textContent = fields.Nombre || "Sin nombre asignado";
-      }
-    })
+  const fields = data.fields;
+  if (fields) {
+    const avatarElement = document.getElementById("videoAvatar");
+    if (fields.Imagen && fields.Imagen[0] && fields.Imagen[0].url) {
+      avatarElement.src = fields.Imagen[0].url;
+    }
+    const nameElement = document.getElementById("videoCloneName");
+    nameElement.textContent = fields.Nombre || "Sin nombre asignado";
+    
+    // Asigna el voice ID para TTS
+    window.elevenVoiceId = fields.ELEVENLABS_VOICE_ID || cloneId;
+  }
+})
+
     .catch(error => {
       console.error("Error al cargar los datos del clon:", error);
     });
@@ -192,6 +197,7 @@ if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) 
         isRecognizing = false;
         document.getElementById('callStatus').innerText = 'Llamada finalizada.';
       }
+      window.close(); // Cierra la ventana flotante
     }
     // Función para convertir la respuesta en texto a audio usando TTS
     async function speakResponse(text) {
@@ -216,6 +222,7 @@ if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) 
   } catch (error) {
     console.error("Error en speakResponse:", error);
   }
+  
 }
 
  // Función para verificar si ya existe una respuesta almacenada en localStorage
@@ -234,16 +241,24 @@ if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) 
   if (event.key === 'callResponse' && event.newValue) {
     const responseData = JSON.parse(event.newValue);
     console.log("CallResponse detectado en llamada.html:", responseData);
-    speakResponse(responseData.text);
+    playBotResponse(responseData.text, cloneId);
+    localStorage.removeItem('callResponse'); // limpia después de usar
   }
 });
+
 
 window.addEventListener('load', () => {
   checkForCallResponse();
   document.getElementById('videoCloneName').innerText = 'Clon';
-  startCall();
+  // startCall();  // Se comenta para evitar autoplay sin interacción
 });
 
+document.getElementById('startCallBtn').addEventListener('click', () => {
+  startCall();
+  document.getElementById('callStatus').innerText = 'Escuchando...';
+  // Puedes ocultar o deshabilitar el botón después de iniciada la llamada
+  document.getElementById('startCallBtn').style.display = 'none';
+});
 
   </script>
   

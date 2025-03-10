@@ -451,32 +451,40 @@
   }
 }
 
-      async function getCloneResponse(userText) {
-        try {
-          const response = await fetch(apiUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{
-                parts: [{
-                  text: `Actúa como si tu nombre fuera "${document.getElementById("chatCloneName").innerText}" y tu descripción es: "${document.getElementById("cloneDescription").innerText}". 
-                  Responde siempre en primera persona y evita mencionar que eres un modelo de lenguaje. 
-                  El usuario dice: "${userText}".`
-                }]
-              }]
-            })
-          });
-          const responseData = await response.json();
-          if (!response.ok || !responseData.candidates) {
-            return "No se pudo obtener respuesta.";
-          } else {
-            return responseData.candidates[0].content.parts[0].text;
-          }
-        } catch (error) {
-          return "Error al conectar con el clon.";
-        }
-      }
+async function getCloneResponse(userText) {
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{
+            text: `Actúa como si tu nombre fuera "${document.getElementById("chatCloneName").innerText}" y tu descripción es: "${document.getElementById("cloneDescription").innerText}". Responde siempre en primera persona y evita mencionar que eres un modelo de lenguaje. El usuario dice: "${userText}".`
+          }]
+        }]
+      })
+    });
 
+    const responseData = await response.json();
+    let botText;
+
+    if (!response.ok || !responseData.candidates) {
+      botText = "No se pudo obtener respuesta.";
+    } else {
+      botText = responseData.candidates[0].content.parts[0].text;
+    }
+
+    // Almacena automáticamente la respuesta en localStorage
+    localStorage.setItem('callResponse', JSON.stringify({ text: botText, timestamp: Date.now() }));
+
+    return botText;
+
+  } catch (error) {
+    const errorText = "Error al conectar con el clon.";
+    localStorage.setItem('callResponse', JSON.stringify({ text: errorText, timestamp: Date.now() }));
+    return errorText;
+  }
+}
       function sendPhoto(event) {
         const file = event.target.files[0];
         if (!file) return;

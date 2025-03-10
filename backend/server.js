@@ -3,7 +3,7 @@ dotenv.config();
 
 import express from 'express';
 import cors from 'cors';
-import axios from 'axios';
+import axios from 'axios'; // Solo si aún necesitas axios para ElevenLabs
 
 const app = express();
 
@@ -42,12 +42,11 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5501;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ELEVENLABS_API_KEY = process.env.ELEVENLABS_API_KEY;
 const ELEVENLABS_VOICE_ID = process.env.ELEVENLABS_VOICE_ID;
 
 // Validar que las variables de entorno estén cargadas
-if (!OPENAI_API_KEY || !ELEVENLABS_API_KEY || !ELEVENLABS_VOICE_ID) {
+if (!ELEVENLABS_API_KEY || !ELEVENLABS_VOICE_ID) {
   console.error('Error: Faltan variables de entorno.');
   process.exit(1); // Detener la ejecución si faltan variables críticas
 }
@@ -63,30 +62,12 @@ async function handleResponse(req, res) {
 
   try {
     console.log('Recibido texto:', userText);
-    console.log('Usando OPENAI_API_KEY:', OPENAI_API_KEY ? 'cargada' : 'no cargada');
     console.log('ELEVENLABS_API_KEY:', ELEVENLABS_API_KEY ? 'Cargada' : 'No encontrada');
     console.log('ELEVENLABS_VOICE_ID:', ELEVENLABS_VOICE_ID ? 'Cargada' : 'No encontrada');
 
-    // Enviar el mensaje a GPT-4
-    const gptResponse = await axios.post(
-      'https://api.openai.com/v1/chat/completions',
-      {
-        model: 'gpt-4',
-        messages: [
-          { role: 'system', content: 'Eres un clon realista.' },
-          { role: 'user', content: userText },
-        ],
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${OPENAI_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    // Aquí puedes agregar la lógica de tu bot para generar una respuesta
+    const botReply = `Has dicho: "${userText}". Este es un ejemplo de respuesta sin OpenAI.`;
 
-    console.log('Respuesta de GPT:', gptResponse.data);
-    const botReply = gptResponse.data.choices[0].message.content;
     console.log('Respuesta del bot:', botReply);
 
     // Convertir la respuesta a voz con ElevenLabs
